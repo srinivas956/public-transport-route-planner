@@ -20,5 +20,5 @@ NaviDelhi is a comprehensive, web-based multi-modal public transport route plann
 
 1. **Clone the repository:**
    ```bash
-   git clone [https://github.com/YourUsername/public-transport-route-planner.git](https://github.com/YourUsername/public-transport-route-planner.git)
+   git clone [https://github.com/srinivas956/public-transport-route-planner.git](https://github.com/srinivas956/public-transport-route-planner.git)
    cd public-transport-route-planner
