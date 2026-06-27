@@ -18,7 +18,7 @@ NaviDelhi is a comprehensive, web-based multi-modal public transport route plann
 
 ## 🚀 Local Setup Instructions
 
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/srinivas956/public-transport-route-planner.git](https://github.com/srinivas956/public-transport-route-planner.git)
-   cd public-transport-route-planner
+1. Clone the repository: git clone https://github.com/srinivas956/public-transport-route-planner.git
+2. Install dependencies: pip install -r requirements.txt
+3. Import the database: Use the transit_db.sql file in your MySQL/phpMyAdmin setup.
+4. Run the app: python app.py
