@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Routes & Stations | NaviDelhi Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; color: #1e293b; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .header { background: #0f172a; color: white; padding: 20px; border-radius: 12px 12px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { background: #ef4444; border: none; padding: 8px 20px; border-radius: 8px; color: white; cursor: pointer; font-weight: 600; transition: 0.2s;}
+        .logout-btn:hover { background: #dc2626; }
+        
+        .admin-nav { background: white; padding: 15px 20px; border-radius: 0 0 12px 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 25px; display: flex; gap: 20px; }
+        .nav-link { color: #475569; text-decoration: none; font-weight: 600; padding: 8px 15px; border-radius: 8px; transition: 0.2s; }
+        .nav-link:hover { background: #f1f5f9; color: #2563eb; }
+        .nav-link.active { background: #eff6ff; color: #2563eb; }
+
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .input-group { display: flex; flex-direction: column; gap: 5px; }
+        .input-group label { font-size: 0.85rem; font-weight: 600; color: #475569; }
+        .input-group input, .input-group select { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+        .input-group input:focus, .input-group select:focus { border-color: #2563eb; outline: none; }
+        
+        .btn-add { background: #10b981; color: white; padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s;}
+        .btn-add:hover { background: #059669; }
+        .btn-delete { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: 0.2s;}
+        .btn-delete:hover { background: #ef4444; color: white; }
+
+        .route-tag, .station-type { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; color: white; text-transform: uppercase;}
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem;}
+        th { background: #f8fafc; font-weight: 600; color: #475569; }
+        hr { margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0; }
+        
+        .search-bar { margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .search-bar input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; width: 300px; font-size: 0.9rem; }
+        .search-bar i { color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> NaviDelhi Admin</h1>
+            <button class="logout-btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+        
+        <div class="admin-nav">
+            <a href="/admin/dashboard" class="nav-link"><i class="fas fa-users"></i> User Reports</a>
+            <a href="/admin/routes" class="nav-link active"><i class="fas fa-project-diagram"></i> Manage Routes & Stations</a>
+        </div>
+
+        <!-- Add Station Card -->
+        <div class="card">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-map-marker-alt" style="color: #3b82f6;"></i> Add New Station</h2>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Station Name</label>
+                    <input type="text" id="station-name" placeholder="e.g., New Station" required>
+                </div>
+                <div class="input-group">
+                    <label>Latitude</label>
+                    <input type="number" id="station-lat" step="any" placeholder="e.g., 28.6139" required>
+                </div>
+                <div class="input-group">
+                    <label>Longitude</label>
+                    <input type="number" id="station-lng" step="any" placeholder="e.g., 77.2090" required>
+                </div>
+                <div class="input-group">
+                    <label>Type</label>
+                    <select id="station-type">
+                        <option value="bus">Bus</option>
+                        <option value="metro">Metro</option>
+                        <option value="train">Train</option>
+                        <option value="interchange">Interchange</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addStation()"><i class="fas fa-save"></i> Save Station</button>
+        </div>
+
+        <!-- Add Route Card -->
+        <div class="card">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-plus-circle" style="color: #10b981;"></i> Add New Connection</h2>
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Source Station</label>
+                    <select id="route-source" required><option value="">Loading stations...</option></select>
+                </div>
+                <div class="input-group">
+                    <label>Destination Station</label>
+                    <select id="route-dest" required><option value="">Loading stations...</option></select>
+                </div>
+                <div class="input-group">
+                    <label>Mode of Transport</label>
+                    <select id="route-mode" required>
+                        <option value="metro">Metro</option>
+                        <option value="bus">Bus</option>
+                        <option value="train">Train</option>
+                        <option value="walk">Walking Transfer</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Line Name (e.g., Red Line)</label>
+                    <input type="text" id="route-line" placeholder="Enter Line Name" required>
+                </div>
+                <div class="input-group">
+                    <label>Travel Time (Mins)</label>
+                    <input type="number" id="route-time" min="1" placeholder="e.g. 5" required>
+                </div>
+                <div class="input-group">
+                    <label>Ticket Price (₹)</label>
+                    <input type="number" id="route-price" min="0" step="0.01" placeholder="e.g. 10" required>
+                </div>
+            </div>
+            <button class="btn-add" onclick="addRoute()"><i class="fas fa-save"></i> Save Connection</button>
+        </div>
+
+        <!-- All Stations with Search -->
+        <div class="card">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-database"></i> All Stations</h2>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="station-search" placeholder="Search by name or type..." onkeyup="filterStations()">
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="stations-table">
+                    <thead>
+                        <tr><th>Name</th><th>Latitude</th><th>Longitude</th><th>Type</th><th>Action</th></tr>
+                    </thead>
+                    <tbody id="stations-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Active Network Connections with Search -->
+        <div class="card">
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-map-marked-alt" style="color: #2563eb;"></i> Active Network Connections</h2>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="route-search" placeholder="Search by source, destination, mode, or line..." onkeyup="filterRoutes()">
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="routes-table">
+                    <thead>
+                        <tr>
+                            <th>Source</th>
+                            <th>Destination</th>
+                            <th>Mode</th>
+                            <th>Line/Service</th>
+                            <th>Time (mins)</th>
+                            <th>Price (₹)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routes-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let stationsData = [];
+        let routesData = [];
+
+        function escapeHtml(str) { return !str ? '' : str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]); }
+
+        // ---------- Stations ----------
+        async function loadAllStations() {
+            try {
+                const res = await fetch('/api/admin/all-stations');
+                const data = await res.json();
+                if (data.success) {
+                    stationsData = data.stations;
+                    renderStationsTable();
+                } else {
+                    Swal.fire('Error', 'Failed to load stations.', 'error');
+                }
+            } catch(e) { console.error(e); Swal.fire('Error', 'Could not load stations.', 'error'); }
+        }
+
+        function renderStationsTable() {
+            const tbody = document.getElementById('stations-tbody');
+            const searchTerm = document.getElementById('station-search').value.toLowerCase();
+            const filtered = stationsData.filter(s => 
+                s.name.toLowerCase().includes(searchTerm) || 
+                s.type.toLowerCase().includes(searchTerm)
+            );
+            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No stations found.</td></tr>'; return; }
+            tbody.innerHTML = filtered.map(s => `
+                <tr>
+                    <td>${escapeHtml(s.name)}</td>
+                    <td>${s.lat}</td>
+                    <td>${s.lng}</td>
+                    <td><span class="station-type" style="background: ${s.type==='metro'?'#3b82f6':s.type==='bus'?'#10b981':s.type==='train'?'#475569':'#f59e0b'};">${s.type}</span></td>
+                    <td><button class="btn-delete" onclick="deleteStation('${escapeHtml(s.name)}')">Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function filterStations() { renderStationsTable(); }
+
+        async function addStation() {
+            const name = document.getElementById('station-name').value.trim();
+            const lat = document.getElementById('station-lat').value;
+            const lng = document.getElementById('station-lng').value;
+            const type = document.getElementById('station-type').value;
+            if (!name || !lat || !lng) {
+                Swal.fire('Error', 'Please fill all fields.', 'error');
+                return;
+            }
+            Swal.fire({ title: 'Adding station...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('/api/admin/add-station', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, lat: parseFloat(lat), lng: parseFloat(lng), type })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    Swal.fire('Success', 'Station added!', 'success');
+                    document.getElementById('station-name').value = '';
+                    document.getElementById('station-lat').value = '';
+                    document.getElementById('station-lng').value = '';
+                    loadAllStations();
+                    loadStationsDropdowns();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch(e) { Swal.fire('Error', 'Network error.', 'error'); }
+        }
+
+        async function deleteStation(name) {
+            const confirm = await Swal.fire({ title: 'Delete station?', text: `Remove "${name}"?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' });
+            if (!confirm.isConfirmed) return;
+            Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('/api/admin/delete-station', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    Swal.fire('Deleted', 'Station removed.', 'success');
+                    loadAllStations();
+                    loadStationsDropdowns();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch(e) { Swal.fire('Error', 'Network error.', 'error'); }
+        }
+
+        // ---------- Routes ----------
+        async function loadStationsDropdowns() {
+            try {
+                const res = await fetch('/api/admin/stations');
+                const data = await res.json();
+                if (data.success) {
+                    let options = '<option value="">-- Select Station --</option>';
+                    data.stations.forEach(st => options += `<option value="${escapeHtml(st.name)}">${escapeHtml(st.name)}</option>`);
+                    document.getElementById('route-source').innerHTML = options;
+                    document.getElementById('route-dest').innerHTML = options;
+                }
+            } catch(e) { console.error("Failed to load stations"); }
+        }
+
+        async function fetchRoutes() {
+            try {
+                const res = await fetch('/api/admin/routes');
+                const data = await res.json();
+                if (data.success) {
+                    routesData = data.routes;
+                    renderRoutesTable();
+                }
+            } catch(e) { console.error(e); Swal.fire('Error', 'Could not load routes.', 'error'); }
+        }
+
+        function renderRoutesTable() {
+            const tbody = document.getElementById('routes-tbody');
+            const searchTerm = document.getElementById('route-search').value.toLowerCase();
+            const filtered = routesData.filter(r => 
+                r.source.toLowerCase().includes(searchTerm) ||
+                r.destination.toLowerCase().includes(searchTerm) ||
+                r.mode.toLowerCase().includes(searchTerm) ||
+                r.line_name.toLowerCase().includes(searchTerm)
+            );
+            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No routes found.</tr></tr>'; return; }
+            tbody.innerHTML = filtered.map(r => `
+                <tr>
+                    <td style="font-weight: 600;">${escapeHtml(r.source)}</td>
+                    <td style="font-weight: 600;">${escapeHtml(r.destination)}</td>
+                    <td><span class="route-tag" style="background: ${r.mode==='metro'?'#3b82f6':r.mode==='bus'?'#10b981':'#475569'};">${r.mode}</span></td>
+                    <td>${escapeHtml(r.line_name)}</td>
+                    <td>${r.time_mins} min</td>
+                    <td style="color: #10b981; font-weight: bold;">₹${r.price}</td>
+                    <td><button class="btn-delete" onclick="deleteRoute('${escapeHtml(r.source)}', '${escapeHtml(r.destination)}', '${escapeHtml(r.line_name)}')"><i class="fas fa-trash"></i> Delete</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function filterRoutes() { renderRoutesTable(); }
+
+        async function addRoute() {
+            const source = document.getElementById('route-source').value;
+            const dest = document.getElementById('route-dest').value;
+            const mode = document.getElementById('route-mode').value;
+            const line = document.getElementById('route-line').value.trim();
+            const time = parseInt(document.getElementById('route-time').value);
+            const price = parseFloat(document.getElementById('route-price').value);
+
+            if (!source || !dest) {
+                Swal.fire('Error', 'Please select source and destination stations.', 'error');
+                return;
+            }
+            if (source === dest) {
+                Swal.fire('Error', 'Source and destination cannot be the same.', 'error');
+                return;
+            }
+            if (!line || isNaN(time) || time <= 0 || isNaN(price) || price < 0) {
+                Swal.fire('Error', 'Please fill all fields with valid values.', 'error');
+                return;
+            }
+            Swal.fire({ title: 'Saving route...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('/api/admin/routes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source, destination: dest, mode, line_name: line, time_mins: time, price })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    Swal.fire('Success', 'Route added!', 'success');
+                    document.getElementById('route-line').value = '';
+                    document.getElementById('route-time').value = '';
+                    document.getElementById('route-price').value = '';
+                    fetchRoutes();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch(e) { Swal.fire('Error', 'Network error.', 'error'); }
+        }
+
+        async function deleteRoute(source, destination, line_name) {
+            const confirm = await Swal.fire({ title: 'Delete connection?', text: `Remove link between ${source} and ${destination}?`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444' });
+            if (!confirm.isConfirmed) return;
+            Swal.fire({ title: 'Deleting...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('/api/admin/routes', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ source, destination, line_name })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    Swal.fire('Deleted', 'Route deleted.', 'success');
+                    fetchRoutes();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch(e) { Swal.fire('Error', 'Network error.', 'error'); }
+        }
+
+        // ---------- Logout ----------
+        async function logoutAdmin() {
+            const confirm = await Swal.fire({ title: 'Logout?', text: 'Are you sure?', icon: 'warning', showCancelButton: true });
+            if (confirm.isConfirmed) {
+                const res = await fetch('/api/admin/logout', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) window.location.href = '/admin/login';
+                else Swal.fire('Error', 'Logout failed', 'error');
+            }
+        }
+
+        // Initial load
+        loadAllStations();
+        loadStationsDropdowns();
+        fetchRoutes();
+    </script>
+</body>
+</html>

@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaviDelhi Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header {
+            background: #0f172a;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logout-btn {
+            background: #ef4444;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .logout-btn:hover { background: #dc2626; }
+        .admin-nav {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+        }
+        .nav-link {
+            color: #475569;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+        .nav-link:hover {
+            background: #f1f5f9;
+            color: #2563eb;
+        }
+        .nav-link.active {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+        .report-section, .stats-section, .routes-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .action-bar {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        .date-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .date-filter .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .date-filter label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .date-filter select, .date-filter input {
+            padding: 6px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .apply-btn, .reset-btn {
+            background: #2c7da0;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .apply-btn:hover, .reset-btn:hover {
+            background: #1e5a77;
+        }
+        .reset-btn {
+            background: #94a3b8;
+        }
+        .reset-btn:hover {
+            background: #64748b;
+        }
+        .user-report-btn {
+            background: #2c7da0;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .user-report-btn:hover {
+            background: #1e5a77;
+        }
+        .download-pdf-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-right: 12px;
+        }
+        .download-pdf-btn:hover {
+            background: #059669;
+        }
+        .user-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .user-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+        .user-details {
+            padding: 0 20px 20px 20px;
+            display: none;
+            border-top: 1px solid #e2e8f0;
+        }
+        .user-details.show { display: block; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .badge {
+            background: #10b981;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 10px;
+        }
+        .chart-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .chart-box {
+            flex: 1;
+            min-width: 320px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        canvas {
+            width: 100% !important;
+            height: 350px !important;
+            display: block;
+        }
+        .auto-refresh-status {
+            font-size: 0.8rem;
+            color: #10b981;
+            margin-left: 15px;
+        }
+        .footer-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            .user-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .action-bar { flex-direction: column; align-items: stretch; }
+            .date-filter { flex-direction: column; align-items: stretch; }
+            .chart-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> NaviDelhi Admin</h1>
+            <button class="logout-btn" onclick="logoutAdmin()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+
+        <div class="admin-nav">
+            <a href="/admin/dashboard" class="nav-link active"><i class="fas fa-users"></i> User Reports</a>
+            <a href="/admin/routes" class="nav-link"><i class="fas fa-project-diagram"></i> Manage Routes & Stations</a>
+        </div>
+
+        <div class="report-section">
+            <h2><i class="fas fa-users"></i> User Reports</h2>
+            <div class="action-bar">
+                <button class="user-report-btn" onclick="toggleUserReport()">
+                    <i class="fas fa-file-alt"></i> User Report
+                </button>
+                <div id="dateFilterContainer" style="display: none;">
+                    <div class="date-filter">
+                        <div class="filter-group">
+                            <label>Filter By</label>
+                            <select id="filterType">
+                                <option value="purchase">Purchase Date</option>
+                                <option value="join">Join Date</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>From Date</label>
+                            <input type="date" id="startDate">
+                        </div>
+                        <div class="filter-group">
+                            <label>To Date</label>
+                            <input type="date" id="endDate">
+                        </div>
+                        <button class="apply-btn" onclick="applyDateFilter()">Apply</button>
+                        <button class="reset-btn" onclick="resetDateFilter()">Reset Dates</button>
+                    </div>
+                </div>
+                <span class="auto-refresh-status" id="refreshStatus">🔄 Auto‑refresh every 30s</span>
+            </div>
+            <div id="report-container"></div>
+        </div>
+
+        <div class="stats-section">
+            <h2><i class="fas fa-chart-bar"></i> Analytics</h2>
+            <div class="chart-container">
+                <div class="chart-box">
+                    <h3>Most Purchased Passes</h3>
+                    <canvas id="passesChart"></canvas>
+                    <p id="passes-placeholder">Loading pass data...</p>
+                </div>
+                <div class="chart-box">
+                    <h3>Most Purchased Ticket Routes</h3>
+                    <canvas id="ticketsChart"></canvas>
+                    <p id="tickets-placeholder">Loading ticket data...</p>
+                </div>
+                <div class="chart-box">
+                    <h3>Most Searched Routes</h3>
+                    <canvas id="routesChart"></canvas>
+                    <p id="routes-placeholder">Loading route data...</p>
+                </div>
+            </div>
+			<h2 style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 30px;">
+            <i class="fas fa-wallet" style="color: #10b981;"></i> Financial Analytics
+        </h2>
+        <div class="chart-container">
+            <div class="chart-box">
+                <h3>7-Day Revenue Trend (₹)</h3>
+                <canvas id="revenueChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Peak Purchase Hours</h3>
+                <canvas id="peakHoursChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Highest Grossing Routes (₹)</h3>
+                <canvas id="profitRoutesChart"></canvas>
+            </div>
+        </div>
+        </div>
+
+        <div class="footer-actions">
+            <button class="download-pdf-btn" onclick="downloadPDF()">
+                <i class="fas fa-download"></i> Download PDF Report
+            </button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let routesChart = null;
+        let passesChart = null;
+        let ticketsChart = null;
+        let reportVisible = false;
+        let refreshInterval = null;
+		let revenueChart = null;
+        let peakHoursChart = null;
+        let profitRoutesChart = null;
+
+        const routeColors = ['#2c7da0', '#61a5c2', '#89c2d9', '#a9d6e5', '#01497c', '#2a6f97', '#4c9f70', '#76c893', '#e9c46a', '#f4a261', '#e76f51', '#d4a5a5'];
+        const passColors = ['#e63946', '#f4a261', '#e9c46a', '#2a9d8f', '#287271', '#8ecae6', '#219ebc', '#fb8500'];
+        const ticketColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec489a'];
+
+        window.addEventListener('load', function() {
+            loadPopularRoutes();
+            loadPassTypes();
+            loadPopularTicketRoutes();
+			loadFinancialAnalytics();
+            startAutoRefresh();
+        });
+
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(() => {
+                loadPopularRoutes();
+                loadPassTypes();
+                loadPopularTicketRoutes();
+				loadFinancialAnalytics();
+                if (reportVisible) {
+                    loadReportWithDates();
+                }
+            }, 30000);
+        }
+
+        function toggleUserReport() {
+            const container = document.getElementById('report-container');
+            const filterContainer = document.getElementById('dateFilterContainer');
+            if (!reportVisible) {
+                filterContainer.style.display = 'block';
+                loadReportWithDates();
+                reportVisible = true;
+            } else {
+                container.innerHTML = '';
+                filterContainer.style.display = 'none';
+                reportVisible = false;
+            }
+        }
+
+        function applyDateFilter() {
+            if (reportVisible) loadReportWithDates();
+        }
+
+        function resetDateFilter() {
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').value = '';
+            if (reportVisible) loadReportWithDates();
+        }
+
+        async function loadReportWithDates() {
+            const container = document.getElementById('report-container');
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const filterType = document.getElementById('filterType').value;
+            let url = '/api/admin/users-report?';
+            if (startDate) url += `start_date=${startDate}&`;
+            if (endDate) url += `end_date=${endDate}&`;
+            url += `filter_type=${filterType}`;
+            if (url.endsWith('&')) url = url.slice(0, -1);
+
+            container.innerHTML = '<p>Loading...</p>';
+            try {
+                const res = await fetch(url);
+                const data = await res.json();
+                if (data.success) {
+                    if (data.report.length === 0) {
+                        container.innerHTML = '<p>No data found for the selected filters.</p>';
+                    } else {
+                        renderReport(data.report);
+                    }
+                } else {
+                    container.innerHTML = `<p>Error: ${data.message}</p>`;
+                    if (data.message === 'Unauthorized') window.location.href = '/admin/login';
+                }
+            } catch (err) {
+                container.innerHTML = '<p>Error loading report.</p>';
+            }
+        }
+
+        function renderReport(report) {
+            const container = document.getElementById('report-container');
+            let html = '';
+            report.forEach(item => {
+                const user = item.user;
+                const tickets = item.tickets;
+                const passes = item.passes;
+                html += `
+                    <div class="user-card">
+                        <div class="user-header" onclick="toggleDetails('user-${user.id}')">
+                            <div>
+                                <strong>${escapeHtml(user.name)}</strong> (${escapeHtml(user.email)})
+                                <span class="badge">Joined: ${new Date(user.created_at).toLocaleDateString()}</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <div id="user-${user.id}" class="user-details">
+                            <h3>Tickets</h3>
+                            ${tickets.length ? `
+                                <table>
+                                    <thead>
+                                        <tr><th>ID</th><th>Route</th><th>Price</th><th>Date</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${tickets.map(t => `
+                                            <tr>
+                                                <td>${t.id}</td>
+                                                <td>${escapeHtml(t.start_station)} → ${escapeHtml(t.end_station)}</td>
+                                                <td>₹${t.price}</td>
+                                                <td>${new Date(t.purchase_date).toLocaleString()}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            ` : '<p>No tickets purchased in this period.</p>'}
+                            <h3>Passes</h3>
+                            ${passes.length ? `
+                                <table>
+                                    <thead>
+                                        <tr><th>ID</th><th>Tier</th><th>Price</th><th>Date</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        ${passes.map(p => `
+                                            <tr>
+                                                <td>${p.id}</td>
+                                                <td>${p.tier_price == 50 ? '1-Day' : p.tier_price == 130 ? '3-Day' : '7-Day'}</td>
+                                                <td>₹${p.tier_price}</td>
+                                                <td>${new Date(p.purchase_date).toLocaleString()}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            ` : '<p>No passes purchased in this period.</p>'}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function toggleDetails(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('show');
+        }
+
+        async function loadPopularRoutes() {
+            const placeholder = document.getElementById('routes-placeholder');
+            const canvas = document.getElementById('routesChart');
+            placeholder.style.display = 'block';
+            canvas.style.display = 'none';
+            try {
+                const res = await fetch('/api/admin/popular-routes');
+                const data = await res.json();
+                if (data.success && data.routes && data.routes.length) {
+                    const labels = data.routes.map(r => {
+                        const parts = [`${r.source}`, "→", `${r.destination}`];
+                        return parts;
+                    });
+                    const counts = data.routes.map(r => r.count);
+                    const backgroundColors = labels.map((_, i) => routeColors[i % routeColors.length]);
+                    placeholder.style.display = 'none';
+                    canvas.style.display = 'block';
+                    if (routesChart) routesChart.destroy();
+                    routesChart = new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Number of Searches',
+                                data: counts,
+                                backgroundColor: backgroundColors,
+                                borderColor: '#2c7da0',
+                                borderWidth: 1,
+                                barPercentage: 0.5
+                            }]
+                        },
+                        options: {
+                            animation: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true, title: { display: true, text: 'Searches' } },
+                                x: {
+                                    ticks: {
+                                        autoSkip: false, maxRotation: 0, minRotation: 0, font: { size: 10 }, padding: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    placeholder.innerHTML = 'No route searches recorded yet.';
+                }
+            } catch (err) {
+                placeholder.innerHTML = 'Error loading popular routes.';
+            }
+        }
+
+        async function loadPassTypes() {
+            const placeholder = document.getElementById('passes-placeholder');
+            const canvas = document.getElementById('passesChart');
+            placeholder.style.display = 'block';
+            canvas.style.display = 'none';
+            try {
+                const res = await fetch('/api/admin/pass-types');
+                const data = await res.json();
+                if (data.success && data.pass_types && data.pass_types.length) {
+                    const labels = data.pass_types.map(p => p.tier_name);
+                    const counts = data.pass_types.map(p => p.count);
+                    const backgroundColors = labels.map((_, i) => passColors[i % passColors.length]);
+                    placeholder.style.display = 'none';
+                    canvas.style.display = 'block';
+                    if (passesChart) passesChart.destroy();
+                    passesChart = new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Passes Purchased',
+                                data: counts,
+                                backgroundColor: backgroundColors,
+                                borderColor: '#2c7da0',
+                                borderWidth: 1,
+                                barPercentage: 0.5
+                            }]
+                        },
+                        options: {
+                            animation: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true },
+                                x: { ticks: { font: { size: 11 } } }
+                            }
+                        }
+                    });
+                } else {
+                    placeholder.innerHTML = 'No pass purchases recorded yet.';
+                }
+            } catch (err) {
+                placeholder.innerHTML = 'Error loading pass data.';
+            }
+        }
+
+        async function loadPopularTicketRoutes() {
+            const placeholder = document.getElementById('tickets-placeholder');
+            const canvas = document.getElementById('ticketsChart');
+            placeholder.style.display = 'block';
+            canvas.style.display = 'none';
+            try {
+                const res = await fetch('/api/admin/popular-ticket-routes');
+                const data = await res.json();
+                if (data.success && data.routes && data.routes.length) {
+                    const labels = data.routes.map(r => {
+                        const parts = r.route.split(' → ');
+                        return [parts[0], "→", parts[1]];
+                    });
+                    const counts = data.routes.map(r => r.count);
+                    const backgroundColors = labels.map((_, i) => ticketColors[i % ticketColors.length]);
+                    placeholder.style.display = 'none';
+                    canvas.style.display = 'block';
+                    if (ticketsChart) ticketsChart.destroy();
+                    ticketsChart = new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Tickets Purchased',
+                                data: counts,
+                                backgroundColor: backgroundColors,
+                                borderColor: '#2c7da0',
+                                borderWidth: 1,
+                                barPercentage: 0.3
+                            }]
+                        },
+                        options: {
+                            animation: false,
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true },
+                                x: {
+                                    ticks: {
+                                        autoSkip: false, maxRotation: 0, minRotation: 0, font: { size: 10 }, padding: 10
+                                    }
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    placeholder.innerHTML = 'No ticket purchases recorded yet.';
+                }
+            } catch (err) {
+                placeholder.innerHTML = 'Error loading ticket data.';
+            }
+        }
+		
+		async function loadFinancialAnalytics() {
+            try {
+                const res = await fetch('/api/admin/financial-analytics');
+                const data = await res.json();
+                
+                if (data.success) {
+                    // 1. Render Daily Revenue Line Chart
+                    const revCtx = document.getElementById('revenueChart');
+                    const revLabels = data.daily_revenue.map(d => {
+                        const date = new Date(d.date);
+                        return `${date.getDate()}/${date.getMonth()+1}`;
+                    });
+                    const revData = data.daily_revenue.map(d => d.total_revenue);
+                    
+                    if (revenueChart) revenueChart.destroy();
+                    revenueChart = new Chart(revCtx, {
+                        type: 'line',
+                        data: {
+                            labels: revLabels,
+                            datasets: [{
+                                label: 'Total Revenue (₹)',
+                                data: revData,
+                                borderColor: '#10b981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: { maintainAspectRatio: false }
+                    });
+
+                    // 2. Render Peak Hours Bar Chart
+                    const hoursCtx = document.getElementById('peakHoursChart');
+                    // Format hours from 24h to 12h (e.g., 14 -> 2 PM)
+                    const hourLabels = data.peak_hours.map(h => {
+                        let hour = h.hour_of_day;
+                        let ampm = hour >= 12 ? 'PM' : 'AM';
+                        hour = hour % 12;
+                        hour = hour ? hour : 12; // the hour '0' should be '12'
+                        return `${hour} ${ampm}`;
+                    });
+                    const hourData = data.peak_hours.map(h => h.volume);
+
+                    if (peakHoursChart) peakHoursChart.destroy();
+                    peakHoursChart = new Chart(hoursCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: hourLabels,
+                            datasets: [{
+                                label: 'Tickets Bought',
+                                data: hourData,
+                                backgroundColor: '#f59e0b',
+                                borderRadius: 4,
+								maxBarThickness: 40
+                            }]
+                        },
+                        options: { maintainAspectRatio: false }
+                    });
+
+                    // 3. Render Most Profitable Routes Doughnut Chart
+                    const profitCtx = document.getElementById('profitRoutesChart');
+                    const profitLabels = data.profitable_routes.map(r => r.route);
+                    const profitData = data.profitable_routes.map(r => r.total_revenue);
+
+                    if (profitRoutesChart) profitRoutesChart.destroy();
+                    profitRoutesChart = new Chart(profitCtx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: profitLabels,
+                            datasets: [{
+                                data: profitData,
+                                backgroundColor: ['#3b82f6', '#8b5cf6', '#ec489a', '#ef4444', '#14b8a6']
+                            }]
+                        },
+                        options: { 
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: {size: 10} } } }
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load financial analytics:', err);
+            }
+        }
+
+        async function downloadPDF() {
+            if (!reportVisible) await loadReportWithDates();
+
+            Swal.fire({
+                title: 'Preparing Report...',
+                text: 'Opening clean printable version',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            // Wait a moment for charts to fully render animations
+            await new Promise(r => setTimeout(r, 1200));
+
+            // 1. Capture Original Analytics Charts
+            const passesImg = document.getElementById('passesChart').toDataURL('image/png');
+            const ticketsImg = document.getElementById('ticketsChart').toDataURL('image/png');
+            const routesImg = document.getElementById('routesChart').toDataURL('image/png');
+
+            // 2. Capture NEW Financial Analytics Charts
+            const revenueImg = document.getElementById('revenueChart').toDataURL('image/png');
+            const peakHoursImg = document.getElementById('peakHoursChart').toDataURL('image/png');
+            const profitRoutesImg = document.getElementById('profitRoutesChart').toDataURL('image/png');
+
+            // Explicitly force user-details block display for HTML extraction
+            const reportContainerNode = document.getElementById('report-container').cloneNode(true);
+            reportContainerNode.querySelectorAll('.user-details').forEach(el => {
+                el.style.display = 'block';
+            });
+            reportContainerNode.querySelectorAll('.fa-chevron-down').forEach(el => el.remove());
+
+            const printableHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>NaviDelhi Admin Report</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+                    body { 
+                        font-family: 'Inter', sans-serif; 
+                        margin: 40px; 
+                        color: #1e293b; 
+                        line-height: 1.6; 
+                    }
+                    h1 { 
+                        text-align: center; 
+                        color: #0f172a; 
+                        margin-bottom: 8px; 
+                    }
+                    .date { 
+                        text-align: center; 
+                        color: #64748b; 
+                        margin-bottom: 40px; 
+                    }
+                    h2 { 
+                        margin-top: 45px; 
+                        padding-left: 12px; 
+                        border-left: 6px solid #2c7da0; 
+                        font-size: 24px;
+                    }
+                    .analytics h2 { border-left-color: #10b981; }
+                    .financial h2 { border-left-color: #f59e0b; }
+                    h3 { 
+                        margin: 30px 0 12px 0; 
+                        font-size: 18px; 
+                        color: #475569; 
+                    }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin: 15px 0; 
+                    }
+                    th, td { 
+                        border: 1px solid #e2e8f0; 
+                        padding: 10px; 
+                        text-align: left; 
+                    }
+                    th { background: #f8fafc; }
+                    img { 
+                        width: 100%; 
+                        max-height: 260px; 
+                        object-fit: contain; 
+                        border: 1px solid #e2e8f0; 
+                        border-radius: 8px; 
+                        margin: 15px 0 25px 0; 
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                    }
+                    .print-btn { 
+                        position: fixed; 
+                        top: 20px; 
+                        right: 20px; 
+                        padding: 12px 24px; 
+                        background: #10b981; 
+                        color: white; 
+                        border: none; 
+                        border-radius: 8px; 
+                        font-size: 16px; 
+                        cursor: pointer; 
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+                        z-index: 100;
+                    }
+                    .user-card {
+                        border: 1px solid #e2e8f0;
+                        padding: 15px;
+                        margin-bottom: 20px;
+                        border-radius: 8px;
+                    }
+                    @media print {
+                        .print-btn { display: none; }
+                        body { margin: 20px; }
+                        img { max-height: 240px; }
+                    }
+                </style>
+            </head>
+            <body>
+                <button onclick="window.print()" class="print-btn">📄 Save as PDF</button>
+                <h1>NaviDelhi Admin Report</h1>
+                <p class="date">Generated on: ${new Date().toLocaleString()}</p>
+
+                <h2>User Detailed Report</h2>
+                ${reportContainerNode.innerHTML}
+
+                <div class="analytics">
+                    <h2>Analytics Overview</h2>
+                    
+                    <h3>Most Purchased Passes</h3>
+                    <img src="${passesImg}" alt="Passes Chart">
+
+                    <h3>Most Purchased Ticket Routes</h3>
+                    <img src="${ticketsImg}" alt="Tickets Chart">
+
+                    <h3>Most Searched Routes</h3>
+                    <img src="${routesImg}" alt="Routes Chart">
+                </div>
+                
+                <div class="financial">
+                    <h2>Financial Analytics</h2>
+                    
+                    <h3>7-Day Revenue Trend (₹)</h3>
+                    <img src="${revenueImg}" alt="Revenue Chart">
+
+                    <h3>Peak Purchase Hours</h3>
+                    <img src="${peakHoursImg}" alt="Peak Hours Chart">
+
+                    <h3>Highest Grossing Routes (₹)</h3>
+                    <img src="${profitRoutesImg}" alt="Profitable Routes Chart">
+                </div>
+
+                <script>
+                    window.onload = () => {
+                        setTimeout(() => window.print(), 800);
+                    };
+                <\/script>
+            </body>
+            </html>`;
+
+            const win = window.open('', '_blank');
+            win.document.write(printableHTML);
+            win.document.close();
+
+            Swal.close();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;'}[m]));
+        }
+
+        async function logoutAdmin() {
+            const confirm = await Swal.fire({ title: 'Logout?', icon: 'warning', showCancelButton: true });
+            if (confirm.isConfirmed) {
+                const res = await fetch('/api/admin/logout', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) window.location.href = '/admin/login';
+                else Swal.fire('Error', 'Logout failed', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

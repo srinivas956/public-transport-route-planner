@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NaviDelhi | Urban Transit Intelligence</title>
+  
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --accent: #ff2e63;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0f2fe;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+            z-index: 10000;
+            padding: 1.1rem 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #ff2e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2.8rem;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after { width: 100%; }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #0099cc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 212, 255, 0.45);
+        }
+
+        .btn-accent {
+            background: linear-gradient(90deg, #ff2e63, #ff6b8b);
+            color: white;
+        }
+
+        /* Hero */
+        .hero {
+            height: 100vh;
+            min-height: 700px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 30%, rgba(0, 212, 255, 0.12) 0%, transparent 60%);
+        }
+
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.9)),
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=2000') center/cover no-repeat;
+            z-index: -1;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 920px;
+            padding: 0 20px;
+            z-index: 2;
+        }
+
+        /* Headline Animation */
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 4.8rem;
+            line-height: 1.05;
+            font-weight: 700;
+            margin-bottom: 1.8rem;
+        }
+
+        .headline {
+            display: inline-flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .word {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(100px) scale(0.85);
+            transition: all 0.95s cubic-bezier(0.23, 1, 0.32, 1);
+            white-space: nowrap;
+        }
+
+        .word.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .highlight {
+            background: linear-gradient(90deg, #00d4ff, #ff2e63, #00d4ff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 4s linear infinite;
+            position: relative;
+        }
+
+        .highlight::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #00d4ff, #ff2e63);
+            border-radius: 4px;
+            transform: scaleX(0);
+            animation: underlineGrow 2s 1.4s forwards;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        @keyframes underlineGrow {
+            to { transform: scaleX(1); }
+        }
+
+        .hero p {
+            font-size: 1.4rem;
+            color: #94a3b8;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1.2s ease 2.2s forwards;
+        }
+
+        .hero-btn {
+            padding: 20px 52px;
+            font-size: 1.25rem;
+            animation: pulse 2.8s infinite;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Planner */
+        .planner-section {
+            padding: 140px 6% 100px;
+            background: #0f172a;
+        }
+
+        .planner-container {
+            display: flex;
+            gap: 40px;
+            max-width: 1480px;
+            margin: 0 auto;
+            height: 88vh;
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(25px);
+        }
+
+        #map {
+            flex: 1;
+            height: 100%;
+        }
+
+        .glass-panel {
+            width: 480px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(0, 212, 255, 0.25);
+            padding: 45px 40px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .input-box {
+            position: relative;
+            margin-bottom: 1.4rem;
+        }
+
+        .input-box i.main-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 1.3rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 20px 20px 20px 58px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(0, 212, 255, 0.35);
+            border-radius: 18px;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 5px rgba(0, 212, 255, 0.18);
+            outline: none;
+        }
+
+        .btn-search {
+            margin-top: 1.8rem;
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: linear-gradient(90deg, #00d4ff, #0099cc);
+            color: white;
+            border-radius: 18px;
+            width: 100%;
+        }
+
+        .route-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .route-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 22px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .route-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.2);
+        }
+
+        .route-card.active {
+            border-color: #ff2e63;
+            box-shadow: 0 0 0 4px rgba(255, 46, 99, 0.25);
+        }
+
+        .route-summary {
+            padding: 22px 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .route-time {
+            font-size: 2.1rem;
+            font-weight: 700;
+            color: #e0f2fe;
+        }
+
+        .route-card.active .route-time {
+            color: var(--primary);
+        }
+
+        .section {
+            padding: 110px 6%;
+        }
+
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.2rem;
+            text-align: center;
+            margin-bottom: 4rem;
+            background: linear-gradient(90deg, #00d4ff, #ff2e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .card {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 28px;
+            padding: 38px 32px;
+            transition: all 0.5s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 70px rgba(0, 212, 255, 0.25);
+        }
+
+        footer {
+            background: #0a0a0a;
+            padding: 90px 6% 50px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .map-station-label {
+            background: rgba(0,0,0,0.85);
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            color: white;
+            white-space: nowrap;
+        }
+
+        /* Pulsing GPS marker */
+        .gps-pulse {
+            background-color: #00d4ff;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7);
+            animation: pulse-map 1.5s infinite;
+        }
+        @keyframes pulse-map {
+            0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 212, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+        }
+
+        @media (max-width: 1024px) {
+            .planner-container { flex-direction: column; height: auto; }
+            .glass-panel { width: 100%; border-right: none; border-bottom: 1px solid rgba(0,212,255,0.25); }
+            #map { height: 60vh; }
+            .hero h1 { font-size: 3rem; }
+            .headline { flex-wrap: wrap; }
+        }
+
+        body.swal2-shown header, 
+        body.swal2-shown .hero, 
+        body.swal2-shown .planner-section, 
+        body.swal2-shown .section, 
+        body.swal2-shown footer {
+            filter: blur(8px) brightness(0.7);
+            transition: filter 0.3s ease;
+            pointer-events: none; 
+        }
+
+        header, .hero, .planner-section, .section, footer {
+            transition: filter 0.3s ease;
+        }
+
+        .swal2-popup {
+            max-height: 95vh !important;
+            overflow-y: auto !important;
+        }
+
+        /* Registration popup inputs visibility */
+        .reg-input {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.15) !important;
+            border: 1px solid rgba(0, 212, 255, 0.5) !important;
+            border-radius: 8px;
+            padding: 10px;
+            width: 100%;
+            margin: 5px 0 !important;
+        }
+        .reg-input::placeholder {
+            color: #94a3b8 !important;
+        }
+        .reg-input:focus {
+            outline: none;
+            border-color: #00d4ff !important;
+            box-shadow: 0 0 0 2px rgba(0, 212, 255, 0.3);
+        }
+        .input-group {
+            margin-bottom: 8px !important;
+        }
+
+        /* SweetAlert2 inputs */
+        .swal2-input {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(0, 212, 255, 0.4) !important;
+        }
+        .swal2-input::placeholder {
+            color: #94a3b8 !important;
+        }
+        .swal2-input:focus {
+            border-color: #00d4ff !important;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
+        }
+
+        body.swal2-shown #main-wrapper {
+            filter: blur(8px);
+            transition: filter 0.3s ease;
+        }
+		/* Ensure text is visible in the Login/Registration popups */
+.swal2-input, .reg-input {
+    color: #1a1a2e !important; /* Dark color for white background */
+    background: #ffffff !important; 
+    border: 1px solid #cbd5e1 !important;
+}
+
+/* Optional: If you want to keep the "dark mode" look for the popup itself */
+.swal2-popup {
+    background: #1a1a2e !important;
+    color: #e0f2fe !important;
+}
+
+/* If you use the dark popup, keep the inputs bright with dark text */
+.swal2-input::placeholder, .reg-input::placeholder {
+    color: #64748b !important;
+}
+/* Make the station names pop against the dark background */
+.route-details div[style*="font-weight: 700"], 
+.route-details div[style*="font-weight: 600"],
+.route-details div[style*="font-weight: 800"] {
+    color: #ffffff !important; /* Pure white for maximum visibility */
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.5); /* Adds depth */
+}
+
+/* Specifically target the Destination (Rajiv Chowk) text */
+#journey-details h2, #journey-details h3, .route-details b {
+    color: var(--primary) !important; /* Uses your bright neon blue */
+}
+
+/* Improve visibility of the 'Walk' and 'Ride' text */
+.route-details div[style*="font-style: italic"] {
+    color: #cbd5e1 !important; /* Lighter grey-blue */
+}
+/* Fix icon containers to keep them inside the panel */
+.route-details {
+    padding: 10px 5px;
+}
+
+/* Ensure the vertical lines and dots stay aligned */
+.route-details > div {
+    position: relative;
+    padding-left: 35px !important; /* Increased space for the icons */
+    margin-bottom: 0;
+}
+
+/* Make Ticket Buttons smaller and more compact */
+.btn-ticket {
+    width: auto !important;
+    padding: 8px 16px !important;
+    font-size: 0.9rem !important;
+    margin: 10px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 12px !important;
+}
+
+/* Fix for the Step Dots (Ride/Walk) */
+.step-dot {
+    left: 0 !important; /* Pulls them back into the padding area */
+    z-index: 10;
+}
+/* --- HIDE WALLET SCROLLBAR --- */
+.wallet-scroll-container {
+    max-height: 450px; 
+    overflow-y: auto;
+    
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none; 
+    /* Hide scrollbar for IE and Edge */
+    -ms-overflow-style: none; 
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.wallet-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+/* completely hide scrollbars in the modal */
+.swal2-popup, 
+.swal2-html-container {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+.swal2-popup::-webkit-scrollbar, 
+.swal2-html-container::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari and Opera */
+}
+    </style>
+</head>
+<body>
+
+<div id="main-wrapper">
+    <header>
+        <a href="/" class="logo"><i class="fas fa-subway"></i> NaviDelhi</a>
+        <nav class="nav-links">
+            <a href="#home">Home</a>
+            <a href="#planner">Plan Route</a>
+            <a href="#nearby">Nearby</a>
+            <a href="/about">About Us</a>
+            <a href="/support">Support</a>
+            <a class="btn btn-accent" onclick="buyDailyPass()" style="margin-left: 1.2rem;">
+                <i class="fas fa-id-card"></i> Buy Pass
+            </a>
+            <span id="auth-section" style="margin-left: 1.5rem; display: flex; align-items: center; gap: 12px;"></span>
+        </nav>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="hero-content">
+            <h1>
+                <span class="headline" id="headline">
+                    <span class="word">Smart</span>
+                    <span class="word">Transit</span>
+                    <span class="word">for</span>
+                    <span class="word">a</span>
+                    <span class="word highlight">Smarter</span>
+                    <span class="word">Delhi</span>
+                </span>
+            </h1>
+            <p>Your all-in-one platform for seamless travel across Metro, Bus, and Railways in the NCR with real-time intelligence.</p>
+            <button class="btn btn-primary hero-btn" onclick="document.getElementById('planner').scrollIntoView({ behavior: 'smooth' })">
+                Start Your Journey
+            </button>
+        </div>
+    </section>
+
+    <!-- PLANNER -->
+    <section class="planner-section" id="planner">
+        <div class="planner-container">
+            <div class="glass-panel">
+                <h2 style="font-size: 1.8rem; margin-bottom: 1.8rem;"><i class="fas fa-search-location"></i> Find Your Route</h2>
+                <div class="input-box">
+                    <i class="fas fa-circle main-icon" style="color: #00ff9d;"></i>
+                    <input list="locations" id="start" placeholder="Where from? (e.g. Dilshad Colony)">
+                </div>
+                <div class="input-box">
+                    <i class="fas fa-map-marker-alt main-icon" style="color: #ff2e63;"></i>
+                    <input list="locations" id="end" placeholder="Where to? (e.g. Rajiv Chowk)">
+                </div>
+                <datalist id="locations"></datalist>
+                <button class="btn btn-primary btn-search" onclick="calculateRoute()">
+                    <i class="fas fa-route"></i> Calculate Routes
+                </button>
+                <div id="journey-details" style="display: none; margin-top: 30px;">
+                    <h3 style="color: #94a3b8; margin-bottom: 16px;">Available Routes</h3>
+                    <div class="route-list" id="route-list-container"></div>
+                </div>
+            </div>
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <!-- NEARBY -->
+    <section class="section" id="nearby" style="background: #0f172a;">
+        <h2 class="section-title">Transit Near You</h2>
+        <p style="text-align: center; max-width: 620px; margin: 0 auto 2.5rem; color: #94a3b8; font-size: 1.25rem;">
+            Enable location services to find the closest stations and check live arrival times.
+        </p>
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <button class="btn btn-primary" id="btn-discover" onclick="discoverNearbyStations()" style="padding: 18px 48px; font-size: 1.15rem;">
+                <i class="fas fa-crosshairs"></i> Locate Me
+            </button>
+        </div>
+        <div class="nearby-grid" id="nearby-grid" style="display: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem; max-width: 1280px; margin: 0 auto;"></div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section">
+        <h2 class="section-title">Why Choose NaviDelhi?</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2.5rem; max-width: 1280px; margin: 0 auto;">
+            <div class="card">
+                <i class="fas fa-route" style="font-size: 3.8rem; color: #00d4ff; margin-bottom: 1.8rem;"></i>
+                <h3 style="font-size: 1.7rem; margin-bottom: 1rem;">Multi-Modal Intelligence</h3>
+                <p style="color: #94a3b8;">Smart routing combining Metro, Bus & Train for fastest and cheapest journeys.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-id-card" style="font-size: 3.8rem; color: #ff2e63; margin-bottom: 1.8rem;"></i>
+                <h3 style="font-size: 1.7rem; margin-bottom: 1rem;">Unified Digital Passes</h3>
+                <p style="color: #94a3b8;">Buy once, travel anywhere. One QR for all public transport in NCR.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-leaf" style="font-size: 3.8rem; color: #22c55e; margin-bottom: 1.8rem;"></i>
+                <h3 style="font-size: 1.7rem; margin-bottom: 1rem;">Sustainable Mobility</h3>
+                <p style="color: #94a3b8;">Reduce your carbon footprint with eco-friendly route suggestions.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 2.4rem; margin-bottom: 1rem; color: #00d4ff;">
+                NaviDelhi
+            </h3>
+            <p style="color: #64748b; max-width: 520px; margin: 0 auto 2.5rem;">
+                Simplifying urban mobility across Delhi-NCR with real-time intelligence.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 2.5rem; margin-bottom: 3rem; font-size: 1.7rem;">
+                <a href="#" style="color: #64748b; transition: 0.3s;"><i class="fab fa-x-twitter"></i></a>
+                <a href="#" style="color: #64748b; transition: 0.3s;"><i class="fab fa-instagram"></i></a>
+                <a href="#" style="color: #64748b; transition: 0.3s;"><i class="fab fa-linkedin-in"></i></a>
+            </div>
+            <div style="color: #475569; font-size: 0.95rem;">
+                © 2026 NaviDelhi Transit Technologies • All Rights Reserved
+            </div>
+        </div>
+    </footer>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // ==================== MAP & GLOBAL VARIABLES ====================
+    const map = L.map('map', { zoomControl: false }).setView([28.6139, 77.2090], 11);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png', {
+        attribution: '© OpenStreetMap © CARTO',
+        maxZoom: 20
+    }).addTo(map);
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    let isLoggedIn = {{ 'true' if current_user else 'false' }};
+    let activePolylines = [];
+    let markers = [];
+    let userMarker = null;
+    let masterRouteData = [];
+    let locationData = {{ locations | tojson }};
+
+    // Populate datalist
+    const datalist = document.getElementById('locations');
+    for (let name in locationData) {
+        let option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
+    }
+
+    // Draw initial station dots (light)
+    for (let [name, data] of Object.entries(locationData)) {
+        let color = data.type === 'interchange' ? '#2d3436' : '#b2bec3';
+        L.circleMarker([data.lat, data.lng], { color: 'white', fillColor: color, fillOpacity: 1, weight: 1, radius: 4 }).addTo(map).bindPopup(`<b>${name}</b>`);
+    }
+
+    const getLineColor = (line) => {
+        if(line.includes('Red')) return '#d63031';
+        if(line.includes('Yellow')) return '#f1c40f';
+        if(line.includes('Blue')) return '#0984e3';
+        if(line.includes('Pink')) return '#e84393';
+        if(line.includes('Violet')) return '#6c5ce7';
+        if(line.includes('Magenta')) return '#6F1E51';
+        if(line.includes('Walking')) return '#b2bec3';
+        if(line.includes('Bus') || line.includes('DTC')) return '#00b894';
+        return '#2d3436';
+    };
+
+    // ==================== HEADLINE ANIMATION ====================
+    function animateHeadline() {
+        const words = document.querySelectorAll('.word');
+        words.forEach((word, index) => {
+            setTimeout(() => {
+                word.classList.add('visible');
+            }, 180 + (index * 110));
+        });
+    }
+
+    // ==================== AUTH UI ====================
+    function updateAuthUI() {
+        const container = document.getElementById('auth-section');
+        if (isLoggedIn) {
+            container.innerHTML = `
+                <a onclick="viewWallet()" style="cursor: pointer; color: #00d4ff; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-wallet"></i> Wallet
+                </a>
+                <button class="btn btn-primary" onclick="logoutUser(event)">Logout</button>
+            `;
+        } else {
+            container.innerHTML = `<button class="btn btn-primary" onclick="signInPopup(event)">Sign In</button>`;
+        }
+    }
+
+    // ==================== ROUTE CALCULATION ====================
+    async function calculateRoute() {
+        const start = document.getElementById('start').value;
+        const end = document.getElementById('end').value;
+        const response = await fetch('/calculate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({start, end}) });
+        const data = await response.json();
+        if (data.success && data.routes.length > 0) {
+            masterRouteData = data.routes;
+            document.getElementById('journey-details').style.display = 'block';
+            const listContainer = document.getElementById('route-list-container');
+            listContainer.innerHTML = '';
+            masterRouteData.forEach((route, index) => {
+                let badgesHtml = route.badges.map((line, i) => {
+                    let icon = line.includes('Bus') || line.includes('DTC') ? 'fa-bus' : line.includes('Train') || line.includes('EMU') ? 'fa-train' : 'fa-subway';
+                    let textCol = line.includes('Yellow') ? 'black' : 'white';
+                    let badge = `<span class="line-badge" style="background: ${getLineColor(line)}; color: ${textCol};"><i class="fas ${icon}"></i> ${line}</span>`;
+                    return i < route.badges.length - 1 ? badge + `<span style="color:#64748b; margin:0 6px;">→</span>` : badge;
+                }).join('');
+                listContainer.innerHTML += `
+                    <div class="route-card" id="card-${index}" onclick="renderSpecificRoute(${index})">
+                        <div class="route-summary">
+                            <div>
+                                <div class="route-time">${route.time} min</div>
+                                <div style="font-size: 0.9rem; color: #94a3b8; margin-top: 4px;">${route.label}</div>
+                                <div class="route-badges">${badgesHtml}</div>
+                            </div>
+                            <div class="route-price">₹${route.price}</div>
+                        </div>
+                        <div class="route-details" id="details-${index}"></div>
+                    </div>
+                `;
+            });
+            renderSpecificRoute(0);
+        } else {
+            Swal.fire({ title: 'No Route Found', text: 'Try different stations or major hubs.', icon: 'error', confirmButtonColor: '#ff2e63' });
+        }
+    }
+
+    async function renderSpecificRoute(routeIndex) {
+        const allCards = document.querySelectorAll('.route-card');
+        allCards.forEach((card, idx) => {
+            if(idx === routeIndex) { card.classList.add('active'); } 
+            else { card.classList.remove('active'); document.getElementById(`details-${idx}`).innerHTML = ''; }
+        });
+
+        // Clear existing map layers
+        activePolylines.forEach(l => map.removeLayer(l)); 
+        markers.forEach(m => map.removeLayer(m));
+        activePolylines = []; 
+        markers = [];
+
+        const route = masterRouteData[routeIndex];
+        const detailsContainer = document.getElementById(`details-${routeIndex}`);
+
+        // 1. Build Ticket Action Buttons
+        let tickets = route.tickets;
+        let detailsHtml = '<div style="margin-bottom: 20px;">';
+        if (tickets.length === 1) {
+            detailsHtml += `<button onclick="generateTicket('${tickets[0].start}', '${tickets[0].end}', ${tickets[0].price}, '${tickets[0].mode}')" style="width: 100%; padding: 12px; background: #00b894; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;"><i class="fas fa-qrcode"></i> Buy ${tickets[0].mode === 'metro' ? 'DMRC' : 'DTC'} Ticket (₹${tickets[0].price})</button>`;
+        } else if (tickets.length > 1) {
+            detailsHtml += `<div style="font-size: 0.85rem; color: #e17055; font-weight: bold; margin-bottom: 8px;"><i class="fas fa-exclamation-triangle"></i> Multi-Modal Route: Separate Tickets Required</div>`;
+            tickets.forEach(t => {
+                let icon = t.mode === 'metro' ? 'fa-subway' : t.mode === 'bus' ? 'fa-bus' : 'fa-train';
+                let color = t.mode === 'metro' ? '#0984e3' : t.mode === 'bus' ? '#00b894' : '#2d3436';
+                let agency = t.mode === 'metro' ? 'DMRC' : t.mode === 'bus' ? 'DTC' : 'RAIL';
+                detailsHtml += `<button onclick="generateTicket('${t.start}', '${t.end}', ${t.price}, '${t.mode}')" style="width: 100%; padding: 10px; margin-bottom: 6px; background: white; color: ${color}; border: 2px solid ${color}; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s;">
+                    <span><i class="fas ${icon}"></i> Buy ${agency} Ticket</span>
+                    <span>₹${t.price}</span>
+                </button>`;
+            });
+            detailsHtml += `<div style="text-align: center; font-size: 0.8rem; margin-top: 8px;"><a href="#" onclick="buyDailyPass()" style="color: #0984e3; font-weight: bold; text-decoration: none;">Tired of multiple tickets? Get a Pass</a></div>`;
+        }
+        detailsHtml += '</div>';
+
+        // 2. Transfer Summary Info
+        detailsHtml += route.transfer_count === 0 
+            ? `<div style="margin-bottom: 15px; color: #00b894; font-weight: 600; font-size: 0.9rem;"><i class="fas fa-check-circle"></i> Direct Route (No Transfers)</div>` 
+            : `<div style="margin-bottom: 15px; color: #e17055; font-weight: 600; font-size: 0.9rem;"><i class="fas fa-exchange-alt"></i> Requires ${route.transfer_count} Transfers</div>`;
+        
+        let bounds = [];
+        let stationMarkersAdded = new Set();
+
+        // Helper to add markers to map
+        function addStationMarker(stationName, coords, color = '#0984e3', isDestination = false) {
+            if (stationMarkersAdded.has(stationName)) return;
+            stationMarkersAdded.add(stationName);
+            let markerColor = isDestination ? '#00b894' : color;
+            let stationDot = L.circleMarker([coords.lat, coords.lng], {
+                radius: 6,
+                fillColor: 'white',
+                color: markerColor,
+                weight: 3,
+                opacity: 1,
+                fillOpacity: 1
+            }).addTo(map);
+            stationDot.bindTooltip(stationName, {
+                permanent: true,
+                direction: 'right',
+                offset: [10, 0],
+                className: 'map-station-label'
+            }).openTooltip();
+            markers.push(stationDot);
+            bounds.push([coords.lat, coords.lng]);
+        }
+
+        // 3. DRAW MAP (Markers & Polylines)
+        for (const instruction of route.instructions) {
+            if (instruction.type === 'ride') {
+                let step = instruction.data;
+                let color = getLineColor(step.line);
+                
+                addStationMarker(step.from, step.from_coords, color);
+                addStationMarker(step.to, step.to_coords, color);
+                
+                // Add Intermediate Stop Markers
+                if (step.intermediate_stops && step.intermediate_stops.length > 0) {
+                    step.intermediate_stops.forEach(stop => {
+                        let stopMarker = L.circleMarker([stop.coords.lat, stop.coords.lng], {
+                            radius: 4, 
+                            fillColor: 'white',
+                            color: color, 
+                            weight: 2.5,
+                            opacity: 1,
+                            fillOpacity: 1
+                        }).addTo(map);
+                        stopMarker.bindTooltip(stop.name, { direction: 'top', offset: [0, -5], className: 'map-station-label' });
+                        markers.push(stopMarker);
+                    });
+                }
+
+                // Prepare Coordinate sequence for lines
+                let allPathCoords = [[step.from_coords.lat, step.from_coords.lng]];
+                if (step.intermediate_stops) {
+                    step.intermediate_stops.forEach(s => allPathCoords.push([s.coords.lat, s.coords.lng]));
+                }
+                allPathCoords.push([step.to_coords.lat, step.to_coords.lng]);
+
+                let lineOptions = { color: color, weight: 6, opacity: 0.9, lineJoin: 'round' };
+                if (step.mode === 'walk') lineOptions.dashArray = '8, 8';
+
+                // Mode-based line drawing
+                if (step.mode === 'metro' || step.mode === 'train') {
+                    // Straight tracks connecting dots perfectly
+                    activePolylines.push(L.polyline(allPathCoords, lineOptions).addTo(map));
+                } else {
+                    // Snap to roads for Bus/Walk
+                    try {
+                        let waypointString = allPathCoords.map(c => `${c[1]},${c[0]}`).join(';');
+                        let res = await fetch(`https://router.project-osrm.org/route/v1/driving/${waypointString}?geometries=geojson`);
+                        let geoData = await res.json();
+                        if (geoData.routes && geoData.routes.length > 0) {
+                            let routeCoords = geoData.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+                            activePolylines.push(L.polyline(routeCoords, lineOptions).addTo(map));
+                        } else {
+                            activePolylines.push(L.polyline(allPathCoords, lineOptions).addTo(map));
+                        }
+                    } catch (err) {
+                        activePolylines.push(L.polyline(allPathCoords, lineOptions).addTo(map));
+                    }
+                }
+            } 
+            else if (instruction.type === 'transfer') {
+                if (locationData[instruction.station]) addStationMarker(instruction.station, locationData[instruction.station], '#b2bec3');
+            } 
+            else if (instruction.type === 'arrive') {
+                addStationMarker(instruction.station, instruction.coords, '#00b894', true);
+            }
+        }
+
+        // 4. BUILD SIDEBAR TEXT (Step-by-Step Instructions)
+        for (const instruction of route.instructions) {
+            if (instruction.type === 'ride') {
+                let step = instruction.data;
+                let stopsText = step.intermediate_stops.length > 0 ? ` (${step.intermediate_stops.length} stops)` : '';
+
+                if (step.mode === 'walk') {
+                    detailsHtml += `
+                        <div style="position: relative; padding-left: 24px; margin-bottom: 0px;">
+                            <div style="position: absolute; left: -10px; top: 2px; width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; z-index: 2;"><i class="fas fa-walking" style="color: #636e72; font-size: 0.8rem;"></i></div>
+                            <div style="font-weight: 600; font-size: 1.05rem; color: #ffffff; margin-bottom: 8px;">${step.from}</div>
+                            <div style="border-left: 4px dotted #b2bec3; padding-left: 24px; padding-bottom: 20px; margin-left: 0px;"><div style="font-size: 0.9rem; color: #cbd5e1; font-style: italic;">Walk to ${step.to} (${step.time} mins)</div></div>
+                        </div>`;
+                } else {
+                    let icon = step.mode === 'bus' ? 'fa-bus' : step.mode === 'train' ? 'fa-train' : 'fa-subway';
+                    let color = getLineColor(step.line);
+                    let textCol = color === '#f1c40f' ? 'black' : 'white';
+                    
+                    detailsHtml += `
+                        <div style="position: relative; padding-left: 24px; margin-bottom: 0px;">
+                            <div style="position: absolute; left: -6px; top: 4px; width: 16px; height: 16px; border-radius: 50%; border: 4px solid ${color}; background: white; z-index: 2;"></div>
+                            <div style="font-weight: 700; font-size: 1.1rem; color: #ffffff; margin-bottom: 8px;">${step.from}</div>
+                            <div style="border-left: 4px solid ${color}; padding-left: 24px; padding-bottom: 20px; margin-left: 0px;">
+                                <span style="background-color: ${color}; color: ${textCol}; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; display: inline-block; margin-bottom: 6px;"><i class="fas ${icon}"></i> ${step.line}</span>
+                                <div style="font-size: 0.9rem; color: #cbd5e1; font-weight: 500;">Ride for ${step.time} mins${stopsText} • ₹${step.price}</div>
+                            </div>
+                        </div>`;
+                }
+            } else if (instruction.type === 'transfer') {
+                if (!instruction.next_line.includes('Walking Transfer')) {
+                    detailsHtml += `
+                        <div style="position: relative; padding-left: 24px; margin-bottom: 0px;">
+                            <div style="position: absolute; left: -10px; top: 2px; width: 24px; height: 24px; border-radius: 50%; background: white; border: 2px solid #b2bec3; display: flex; align-items: center; justify-content: center; z-index: 2;"><i class="fas fa-walking" style="color: #636e72; font-size: 0.8rem;"></i></div>
+                            <div style="font-weight: 600; font-size: 1.05rem; color: #ffffff; margin-bottom: 8px;">${instruction.station}</div>
+                            <div style="border-left: 4px dotted #b2bec3; padding-left: 24px; padding-bottom: 20px; margin-left: 0px;"><div style="font-size: 0.9rem; color: #cbd5e1; font-style: italic;">Walk to ${instruction.next_line} platform</div></div>
+                        </div>`;
+                }
+            } else if (instruction.type === 'arrive') {
+                detailsHtml += `
+                    <div style="position: relative; padding-left: 24px; margin-bottom: 10px;">
+                        <div style="position: absolute; left: -8px; top: 2px; width: 20px; height: 20px; border-radius: 50%; border: 5px solid #00b894; background: white; z-index: 2; box-shadow: 0 0 10px rgba(0,184,148,0.4);"></div>
+                        <div style="font-weight: 800; font-size: 1.2rem; color: #00b894;">${instruction.station}</div>
+                        <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 2px;">Destination</div>
+                    </div>`;
+            }
+        }
+        
+        detailsContainer.innerHTML = detailsHtml;
+        if (bounds.length) map.fitBounds(bounds, {padding: [80, 80]});
+    }
+
+    // ==================== AUTH UI & OTP LOGIC ====================
+    async function signInPopup(e) {
+        if (e) e.preventDefault(); 
+        const result = await Swal.fire({
+            title: 'Sign In',
+            showCloseButton: true,
+            html: `
+                <div style="margin-top:15px; text-align: left; overflow: hidden;">
+                    <input type="email" id="login-email" class="swal2-input" placeholder="Email Address" style="margin: 0 auto 5px auto; width: 92%; display: block; box-sizing: border-box;">
+                    <div id="login-email-err" style="font-size: 0.8rem; height: 16px; margin-left: 15px; color: #ff2e63;"></div>
+                    
+                    <input type="password" id="login-password" class="swal2-input" placeholder="Password" style="margin: 0 auto 5px auto; width: 92%; display: block; box-sizing: border-box;">
+                    <div id="login-pass-err" style="font-size: 0.8rem; height: 16px; margin-left: 15px; color: #ff2e63;"></div>
+                </div>
+                <div style="margin-top: 20px; font-size: 0.9rem; color: #94a3b8;">
+                    No account yet? <a href="#" id="switch-to-register" style="color: #00d4ff; text-decoration: none; font-weight: bold;">Sign up</a>
+                </div>`,
+            width: '450px',
+            showConfirmButton: true,
+            showCancelButton: false, 
+            confirmButtonText: 'Login', 
+            confirmButtonColor: '#0984e3', 
+            didOpen: () => {
+                const emailInput = document.getElementById('login-email');
+                const passInput = document.getElementById('login-password');
+                const emailErr = document.getElementById('login-email-err');
+                const passErr = document.getElementById('login-pass-err');
+                const confirmBtn = Swal.getConfirmButton();
+                
+                // Disable login button by default
+                confirmBtn.disabled = true;
+
+                // Handle the "Sign up" link click
+                document.getElementById('switch-to-register').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Swal.close(); // Close current popup
+                    setTimeout(showRegisterPopup, 200); // Open Register popup
+                });
+
+                const validateLogin = () => {
+                    let isEmailValid = false;
+                    let isPassValid = false;
+
+                    const email = emailInput.value.trim();
+                    const pass = passInput.value;
+
+                    // 1. Validate Email
+                    if (!email) {
+                        emailErr.textContent = '';
+                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                        emailErr.textContent = 'Invalid email format';
+                        emailErr.style.color = '#ff2e63';
+                    } else {
+                        emailErr.textContent = '✓ Valid email';
+                        emailErr.style.color = '#00b894';
+                        isEmailValid = true;
+                    }
+
+                    // 2. Validate Password (just check if it's not empty for login)
+                    if (!pass) {
+                        passErr.textContent = '';
+                    } else {
+                        passErr.textContent = ''; 
+                        isPassValid = true;
+                    }
+
+                    // Enable button only if both are filled correctly
+                    confirmBtn.disabled = !(isEmailValid && isPassValid);
+                };
+
+                // Attach runtime listeners
+                emailInput.addEventListener('input', validateLogin);
+                passInput.addEventListener('input', validateLogin);
+            },
+            preConfirm: () => {
+                return { email: document.getElementById('login-email').value, password: document.getElementById('login-password').value };
+            }
+        });
+        
+        if (result.isConfirmed) {
+            Swal.fire({ title: 'Authenticating...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(result.value) });
+            const data = await res.json();
+            
+            if(data.success && data.requires_otp) {
+                verifyOtpPopup('/api/verify-login', 'Login');
+            }
+            else if (data.success) {
+                window.location.reload(); 
+            }
+            else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        }
+    }
+
+    async function showRegisterPopup() {
+        const { value: form } = await Swal.fire({
+            title: 'Create an Account',
+            width: '450px',
+            padding: '1rem',
+            showCloseButton: true,
+            html: `
+                <div style="text-align: left; overflow: hidden; padding-bottom: 5px;">
+                    <input type="text" id="reg-name" class="swal2-input" placeholder="Full Name" autocomplete="off" style="margin: 0 auto 5px auto; width: 92%; display: block; box-sizing: border-box; transition: border-color 0.3s;">
+                    <div id="name-error" style="font-size: 0.8rem; height: 16px; margin-left: 15px; margin-bottom: 5px; transition: color 0.3s;"></div>
+                    
+                    <input type="email" id="reg-email" class="swal2-input" placeholder="Email Address" autocomplete="off" style="margin: 0 auto 5px auto; width: 92%; display: block; box-sizing: border-box; transition: border-color 0.3s;">
+                    <div id="email-error" style="font-size: 0.8rem; height: 16px; margin-left: 15px; margin-bottom: 5px; transition: color 0.3s;"></div>
+                    
+                    <input type="password" id="reg-password" class="swal2-input" placeholder="Password" style="margin: 0 auto 5px auto; width: 92%; display: block; box-sizing: border-box; transition: border-color 0.3s;">
+                    <div id="password-error" style="font-size: 0.8rem; height: 16px; margin-left: 15px; transition: color 0.3s;"></div>
+                    <div style="font-size: 0.7rem; color: #94a3b8; margin-left: 15px; margin-bottom: 12px; line-height: 1.2;">Must have: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special char</div>
+                    
+                    <input type="password" id="reg-confirm-password" class="swal2-input" placeholder="Confirm Password" style="margin: 0 auto 5px auto; width: 92%; display: block; box-sizing: border-box; transition: border-color 0.3s;">
+                    <div id="confirm-error" style="font-size: 0.8rem; height: 16px; margin-left: 15px; transition: color 0.3s;"></div>
+                </div>
+                <div style="margin-top: 15px; font-size: 0.9rem; color: #94a3b8;">
+                    Already have an account? <a href="#" id="switch-to-login" style="color: #00d4ff; text-decoration: none; font-weight: bold;">Log in</a>
+                </div>
+            `,
+            confirmButtonText: 'Sign Up',
+            confirmButtonColor: '#00b894',
+            showCancelButton: false,
+            focusConfirm: false,
+            didOpen: () => {
+                const nameInput = document.getElementById('reg-name');
+                const emailInput = document.getElementById('reg-email');
+                const passwordInput = document.getElementById('reg-password');
+                const confirmInput = document.getElementById('reg-confirm-password');
+                const confirmBtn = Swal.getConfirmButton();
+                
+                // Disable signup button by default
+                confirmBtn.disabled = true;
+
+                // Handle the "Log in" link click
+                document.getElementById('switch-to-login').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Swal.close(); 
+                    setTimeout(signInPopup, 200); 
+                });
+
+                // Core Validation UI Updater
+                const updateUI = (inputEl, errEl, isValid, errMsg) => {
+                    // Reset to neutral if empty
+                    if (inputEl.value.trim() === '') {
+                        inputEl.style.borderColor = '#cbd5e1'; 
+                        errEl.textContent = '';
+                        return false;
+                    }
+                    if (isValid) {
+                        inputEl.style.borderColor = '#00b894'; // Green border
+                        errEl.textContent = '✓ Looks good';
+                        errEl.style.color = '#00b894';
+                        return true;
+                    } else {
+                        inputEl.style.borderColor = '#ff2e63'; // Red border
+                        errEl.textContent = errMsg;
+                        errEl.style.color = '#ff2e63';
+                        return false;
+                    }
+                };
+
+                // Individual Field Validators
+                const validateName = () => {
+                    const name = nameInput.value.trim();
+                    let isValid = true;
+                    let msg = '';
+                    if (name.length < 2) { isValid = false; msg = 'Must be at least 2 characters'; }
+                    else if (/[^a-zA-Z\s]/.test(name)) { isValid = false; msg = 'Letters and spaces only'; }
+                    return updateUI(nameInput, document.getElementById('name-error'), isValid, msg);
+                };
+
+                const validateEmail = () => {
+                    const email = emailInput.value.trim();
+                    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                    return updateUI(emailInput, document.getElementById('email-error'), isValid, 'Invalid email format');
+                };
+
+                const validatePassword = () => {
+                    const pwd = passwordInput.value;
+                    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+                    const isValid = strongRegex.test(pwd);
+                    return updateUI(passwordInput, document.getElementById('password-error'), isValid, 'Password is too weak');
+                };
+
+                const validateConfirm = () => {
+                    const pwd = passwordInput.value;
+                    const confirm = confirmInput.value;
+                    const errEl = document.getElementById('confirm-error');
+                    
+                    if (confirm === '') {
+                        confirmInput.style.borderColor = '#cbd5e1';
+                        errEl.textContent = '';
+                        return false;
+                    }
+                    const isValid = (pwd === confirm);
+                    return updateUI(confirmInput, errEl, isValid, 'Passwords do not match');
+                };
+
+                // Master Check to enable/disable the submit button
+                const checkAllValid = () => {
+                    confirmBtn.disabled = !(validateName() && validateEmail() && validatePassword() && validateConfirm());
+                };
+
+                // Attach 'input' event listeners so validation happens on every keystroke
+                nameInput.addEventListener('input', () => { validateName(); checkAllValid(); });
+                emailInput.addEventListener('input', () => { validateEmail(); checkAllValid(); });
+                passwordInput.addEventListener('input', () => { validatePassword(); validateConfirm(); checkAllValid(); });
+                confirmInput.addEventListener('input', () => { validateConfirm(); checkAllValid(); });
+            },
+            preConfirm: () => {
+                return { 
+                    name: document.getElementById('reg-name').value.trim(), 
+                    email: document.getElementById('reg-email').value.trim(), 
+                    password: document.getElementById('reg-password').value 
+                };
+            }
+        });
+        
+        if (form) {
+            Swal.fire({ title: 'Setting up account...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+                const data = await res.json();
+                
+                if (data.success && data.requires_otp) {
+                    verifyOtpPopup('/api/verify-register', 'Registration');
+                } else if (!data.success) {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Server connection failed.', 'error');
+            }
+        }
+    }
+
+    async function verifyOtpPopup(endpoint, action) {
+        const { value: otp } = await Swal.fire({
+            title: 'Enter Verification Code',
+            text: `We sent a 6-digit code to your email.`,
+            input: 'text',
+            inputAttributes: { maxlength: 6, autocapitalize: 'off', autocorrect: 'off', pattern: '[0-9]*' },
+            inputPlaceholder: 'Enter 6-digit OTP',
+            showCancelButton: true,
+            confirmButtonText: 'Verify',
+            confirmButtonColor: '#0984e3',
+            preConfirm: (otpValue) => {
+                if (!otpValue || otpValue.length !== 6) { Swal.showValidationMessage('Please enter a valid 6-digit code'); }
+                return otpValue;
+            }
+        });
+
+        if (otp) {
+            Swal.fire({ title: 'Verifying...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ otp }) });
+            const data = await res.json();
+
+            if (data.success) {
+                Swal.fire('Success', `${action} successful!`, 'success').then(() => window.location.reload());
+            } else {
+                Swal.fire('Error', data.message, 'error').then(() => { verifyOtpPopup(endpoint, action); });
+            }
+        }
+    }
+
+    function logoutUser(e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Log Out?', text: "Are you sure you want to log out?", icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#d63031', cancelButtonColor: '#b2bec3', confirmButtonText: 'Yes, Log Out'
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.reload();
+            }
+        });
+    }
+
+    async function buyDailyPass() {
+        if (!isLoggedIn) {
+            Swal.fire({ title: 'Login Required', text: 'Please sign in to purchase a pass.', icon: 'info', confirmButtonColor: '#0984e3' })
+            .then(() => { signInPopup(); });
+            return;
+        }
+        const result = await Swal.fire({ 
+            title: 'Delhi Master Pass', 
+            html: `<div style="text-align:left; margin-bottom: 15px;"><p style="color:#636e72; font-size:0.9rem;">Unlimited travel across Metro, DTC Buses, and local EMU Trains.</p></div><select id="pass-type" class="swal2-input" style="width: 100%; margin:0; font-family:'Outfit';"><option value="50">1-Day Explorer Pass (₹50)</option><option value="130">3-Day Tourist Pass (₹130)</option><option value="250">7-Day Commuter Pass (₹250)</option></select>`, 
+            confirmButtonText: 'Generate Pass', confirmButtonColor: '#0984e3', showCancelButton: true 
+        });
+        if(result.isConfirmed) {
+            const price = document.getElementById('pass-type').value;
+            Swal.fire({title: 'Initiating Secure Payment...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+            try {
+                const orderRes = await fetch('/api/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ price: price, type: 'pass' }) });
+                const orderData = await orderRes.json();
+                if (!orderData.success) { Swal.fire('Error', 'Failed to initialize payment gateway.', 'error'); return; }
+                Swal.close();
+                const options = {
+                    "key": "rzp_test_SWz7sxoKSCmm5i",
+                    "amount": orderData.amount,
+                    "currency": "INR",
+                    "name": "NaviDelhi Transit",
+                    "description": `Master Pass (₹${price})`,
+                    "image": "https://cdn-icons-png.flaticon.com/512/3214/3214307.png",
+                    "order_id": orderData.order_id,
+                    "handler": async function (response) {
+                        Swal.fire({ title: 'Processing Pass...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                        const res = await fetch('/api/generate-pass', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({tier: price}) });
+                        const passData = await res.json();
+                        setTimeout(() => {
+                            Swal.fire({ 
+                                title: 'Active Pass', 
+                                html: `<div style="background: #2d3436; color: white; padding: 20px; border-radius: 12px; margin-top: 15px; position: relative; overflow: hidden;"><div style="position: absolute; top: -20px; right: -20px; font-size: 5rem; color: rgba(255,255,255,0.05);"><i class="fas fa-subway"></i></div><h3 style="margin: 0 0 5px 0; color: #f1c40f;"><i class="fas fa-check-circle"></i> VALID</h3><p style="margin: 0; font-size: 1.2rem;">All-Access Transit Pass</p><p style="margin: 5px 0 15px 0; font-size: 0.8rem; color: #b2bec3;">Payment ID: ${response.razorpay_payment_id}</p><div id="pass-qrcode" style="display: flex; justify-content: center; padding: 15px; background: white; border-radius: 8px; margin-top: 15px;"></div></div>`, 
+                                confirmButtonText: 'Save to Wallet', confirmButtonColor: '#00b894', 
+                                didOpen: () => { new QRCode(document.getElementById("pass-qrcode"), { text: passData.qr_data, width: 160, height: 160, colorDark : "#2d3436", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); } 
+                            });
+                        }, 1200);
+                    },
+                    "theme": { "color": "#0984e3" }
+                };
+                const rzp1 = new Razorpay(options);
+                rzp1.on('payment.failed', function (response){ Swal.fire('Payment Failed', response.error.description, 'error'); });
+                rzp1.open();
+            } catch (error) { Swal.fire('Error', 'Network error. Please try again.', 'error'); }
+        }
+    }
+
+    async function generateTicket(start, end, price, mode = 'transit') {
+        if (!isLoggedIn) {
+           Swal.fire({ title: 'Login Required', text: 'Please sign in to buy transit tickets.', icon: 'info', confirmButtonColor: '#0984e3' })
+           .then(() => { signInPopup(); });
+           return;
+        }
+        let agencyName = mode === 'metro' ? 'DMRC Metro' : mode === 'bus' ? 'DTC Bus' : 'Northern Railway';
+        let iconColor = mode === 'metro' ? '#0984e3' : mode === 'bus' ? '#00b894' : '#2d3436';
+        Swal.fire({ title: 'Initiating Secure Payment...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        try {
+            const orderRes = await fetch('/api/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ price: price, type: 'ticket' }) });
+            const orderData = await orderRes.json();
+            if (!orderData.success) { Swal.fire('Error', 'Failed to initialize payment gateway.', 'error'); return; }
+            Swal.close();
+            const options = {
+                "key": "rzp_test_SWz7sxoKSCmm5i",
+                "amount": orderData.amount,
+                "currency": "INR",
+                "name": "NaviDelhi Transit",
+                "description": `${agencyName} Ticket: ${start} to ${end}`,
+                "image": "https://cdn-icons-png.flaticon.com/512/3214/3214307.png",
+                "order_id": orderData.order_id,
+                "handler": async function (response) {
+                    Swal.fire({ title: 'Generating E-Ticket...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                    const res = await fetch('/api/generate-ticket', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({start, end, price}) });
+                    const ticketData = await res.json();
+                    setTimeout(() => {
+                        Swal.fire({ 
+                            title: 'E-Ticket Confirmed', 
+                            html: `<div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px dashed ${iconColor}; margin-top: 15px;"><h4 style="color: ${iconColor}; margin-top: 0;">${agencyName}</h4><h3 style="margin: 0 0 10px 0; color: #2d3436;">${start} <i class="fas fa-arrow-right"></i> ${end}</h3><p style="margin: 0; font-size: 1.2rem; font-weight: bold;">Paid: ₹${price}</p><p style="margin: 5px 0 15px 0; font-size: 0.8rem; color: #888;">Payment ID: ${response.razorpay_payment_id}</p><div id="qrcode" style="display: flex; justify-content: center; padding: 10px; background: white; border-radius: 8px;"></div></div>`, 
+                            confirmButtonText: 'Download Ticket', 
+                            confirmButtonColor: iconColor, 
+                            didOpen: () => { new QRCode(document.getElementById("qrcode"), { text: ticketData.qr_data, width: 150, height: 150, colorDark : "#2d3436", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); } 
+                        });
+                    }, 1000);
+                },
+                "theme": { "color": iconColor }
+            };
+            const rzp1 = new Razorpay(options);
+            rzp1.on('payment.failed', function (response){ Swal.fire('Payment Failed', response.error.description, 'error'); });
+            rzp1.open();
+        } catch (error) { Swal.fire('Error', 'Network error. Please try again.', 'error'); }
+    }
+
+    async function viewWallet() {
+        Swal.fire({ title: 'Loading Wallet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            const res = await fetch('/api/my-wallet');
+            const data = await res.json();
+            if (!data.success) { Swal.fire('Login Required', 'Please sign in to view your tickets and passes.', 'info'); return; }
+            const now = new Date();
+            const activePasses = [], expiredPasses = [];
+            data.passes.forEach(p => {
+                const pDate = new Date(p.purchase_date);
+                let daysValid = p.tier_price == 250 ? 7 : (p.tier_price == 130 ? 3 : 1);
+                const expDate = new Date(pDate.getTime() + (daysValid * 24 * 60 * 60 * 1000));
+                if (now < expDate) activePasses.push(p); else expiredPasses.push(p);
+            });
+            const activeTickets = [], expiredTickets = [];
+            data.tickets.forEach(t => {
+                const pDate = new Date(t.purchase_date);
+                const expDate = new Date(pDate.getTime() + (2 * 60 * 60 * 1000));
+                if (now < expDate) activeTickets.push(t); else expiredTickets.push(t);
+            });
+            let html = '<div style="text-align: left;">';
+            html += '<h3 style="color: #0984e3; margin-top: 0; margin-bottom: 10px;"><i class="fas fa-id-card"></i> Active Passes</h3>';
+            if (activePasses.length === 0) html += '<p style="color: #b2bec3; font-size: 0.9rem;">No active passes.</p>';
+            else {
+                activePasses.forEach(p => {
+                    let dateStr = new Date(p.purchase_date).toLocaleString();
+                    html += `<div onclick="showSavedPassQR('${p.id}', '${p.tier_price}', '${dateStr}')" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #f1c40f; margin-bottom: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                <div style="float: right; background: #e0f2fe; color: #0984e3; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">ACTIVE</div>
+                                <strong style="color: #2d3436; font-size: 1.1rem;">Master Pass (₹${p.tier_price})</strong><br>
+                                <span style="font-size: 0.8rem; color: #636e72;">Purchased: ${dateStr}</span>
+                             </div>`;
+                });
+            }
+            html += '<h3 style="color: #0984e3; margin-top: 25px; margin-bottom: 10px;"><i class="fas fa-ticket-alt"></i> Active Tickets</h3>';
+            if (activeTickets.length === 0) html += '<p style="color: #b2bec3; font-size: 0.9rem;">No active tickets.</p>';
+            else {
+                activeTickets.forEach(t => {
+                    let dateStr = new Date(t.purchase_date).toLocaleString();
+                    html += `<div onclick="showSavedTicketQR('${t.id}', '${t.start_station}', '${t.end_station}', '${t.price}')" style="background: #f8f9fa; padding: 12px; border-left: 4px solid #00b894; margin-bottom: 10px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+                                <div style="float: right; background: #e0f2fe; color: #0984e3; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">ACTIVE</div>
+                                <strong style="color: #2d3436; font-size: 1.05rem;">${t.start_station} <i class="fas fa-arrow-right" style="color:#b2bec3; font-size:0.8rem;"></i> ${t.end_station}</strong><br>
+                                <span style="color: #d63031; font-weight: bold;">₹${t.price}</span><br>
+                                <span style="font-size: 0.8rem; color: #636e72;">Purchased: ${dateStr}</span>
+                             </div>`;
+                });
+            }
+            if (expiredPasses.length > 0 || expiredTickets.length > 0) {
+                html += '<h3 style="color: #636e72; margin-top: 25px; margin-bottom: 10px;"><i class="fas fa-history"></i> Past History</h3>';
+                expiredPasses.forEach(p => {
+                    let dateStr = new Date(p.purchase_date).toLocaleString();
+                    html += `<div style="background: #f1f2f6; padding: 12px; border-left: 4px solid #b2bec3; margin-bottom: 10px; border-radius: 6px; opacity: 0.7;">
+                                <div style="float: right; background: #dfe6e9; color: #636e72; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">EXPIRED</div>
+                                <strong style="color: #636e72; font-size: 1.1rem;">Master Pass (₹${p.tier_price})</strong><br>
+                                <span style="font-size: 0.8rem; color: #b2bec3;">Purchased: ${dateStr}</span>
+                             </div>`;
+                });
+                expiredTickets.forEach(t => {
+                    let dateStr = new Date(t.purchase_date).toLocaleString();
+                    html += `<div style="background: #f1f2f6; padding: 12px; border-left: 4px solid #b2bec3; margin-bottom: 10px; border-radius: 6px; opacity: 0.7;">
+                                <div style="float: right; background: #dfe6e9; color: #636e72; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold;">EXPIRED</div>
+                                <strong style="color: #636e72; font-size: 1.05rem;"><strike>${t.start_station} <i class="fas fa-arrow-right"></i> ${t.end_station}</strike></strong><br>
+                                <span style="font-size: 0.8rem; color: #b2bec3;">Purchased: ${dateStr}</span>
+                             </div>`;
+                });
+            }
+            html += '</div>';
+            Swal.fire({ title: 'My Digital Wallet', html: html, confirmButtonText: 'Close', confirmButtonColor: '#2d3436', width: '450px' });
+        } catch (error) { Swal.fire('Error', 'Could not load your wallet data.', 'error'); }
+    }
+
+    function showSavedPassQR(id, price, dateStr) {
+        const qrText = `MASTER PASS ID: ${id} | TIER: Rs.${price} | PURCHASED: ${dateStr}`;
+        Swal.fire({ 
+            title: 'Active Pass', 
+            html: `<div style="background: #2d3436; color: white; padding: 20px; border-radius: 12px; margin-top: 15px; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; font-size: 5rem; color: rgba(255,255,255,0.05);"><i class="fas fa-subway"></i></div>
+                    <h3 style="margin: 0 0 5px 0; color: #f1c40f;"><i class="fas fa-check-circle"></i> VALID</h3>
+                    <p style="margin: 0; font-size: 1.2rem;">All-Access Transit Pass</p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.85rem; color: #b2bec3;">Pass #${id} • ₹${price}</p>
+                    <div id="saved-pass-qrcode" style="display: flex; justify-content: center; padding: 15px; background: white; border-radius: 8px; margin-top: 15px;"></div>
+                   </div>`, 
+            confirmButtonText: '<i class="fas fa-arrow-left"></i> Back to Wallet', 
+            confirmButtonColor: '#2d3436', 
+            didOpen: () => { 
+                setTimeout(() => {
+                    const qrContainer = document.getElementById("saved-pass-qrcode");
+                    qrContainer.innerHTML = ""; 
+                    new QRCode(qrContainer, { text: qrText, width: 160, height: 160, colorDark : "#2d3436", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); 
+                }, 50);
+            } 
+        }).then(() => { viewWallet(); });
+    }
+
+    function showSavedTicketQR(id, start, end, price) {
+        const qrText = `TICKET ID: ${id} | Route: ${start} to ${end} | PAID: Rs.${price}`;
+        Swal.fire({ 
+            title: 'E-Ticket', 
+            html: `<div style="background: #f8f9fa; padding: 20px; border-radius: 12px; border: 2px dashed #0984e3; margin-top: 15px;">
+                    <h4 style="color: #0984e3; margin-top: 0;">Transit Ticket</h4>
+                    <h3 style="margin: 0 0 10px 0; color: #2d3436;">${start} <i class="fas fa-arrow-right"></i> ${end}</h3>
+                    <p style="margin: 0; font-size: 1.2rem; font-weight: bold;">Paid: ₹${price}</p>
+                    <div id="saved-ticket-qrcode" style="display: flex; justify-content: center; padding: 10px; background: white; border-radius: 8px; margin-top: 15px;"></div>
+                   </div>`, 
+            confirmButtonText: '<i class="fas fa-arrow-left"></i> Back to Wallet', 
+            confirmButtonColor: '#2d3436', 
+            didOpen: () => { 
+                setTimeout(() => {
+                    const qrContainer = document.getElementById("saved-ticket-qrcode");
+                    qrContainer.innerHTML = ""; 
+                    new QRCode(qrContainer, { text: qrText, width: 150, height: 150, colorDark : "#2d3436", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); 
+                }, 50);
+            } 
+        }).then(() => { viewWallet(); });
+    }
+
+    function discoverNearbyStations() {
+        if (navigator.geolocation) {
+            const btn = document.getElementById('btn-discover'); 
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                btn.innerHTML = '<i class="fas fa-check"></i> Location Found';
+                const userLat = position.coords.latitude; 
+                const userLng = position.coords.longitude;
+                try {
+                    const response = await fetch('/api/nearby', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({lat: userLat, lng: userLng}) });
+                    const data = await response.json();
+                    if(data.success) {
+                        const closest = data.closest; 
+                        document.getElementById('nearby-grid').style.display = 'grid'; 
+                        const grid = document.getElementById('nearby-grid'); 
+                        grid.innerHTML = '';
+                        const config = { 
+                            metro: { icon: 'fa-subway', title: 'Nearest Metro' }, 
+                            bus: { icon: 'fa-bus', title: 'Nearest Bus' }, 
+                            train: { icon: 'fa-train', title: 'Nearest Train' } 
+                        };
+                        Object.keys(closest).forEach(type => {
+                            if (closest[type].name !== '') {
+                                grid.innerHTML += `
+                                    <div class="card" style="border-top: 4px solid ${type === 'metro' ? '#d63031' : type === 'bus' ? '#00b894' : '#2c7da0'};">
+                                        <div>
+                                            <h3><i class="fas ${config[type].icon}"></i> ${config[type].title}</h3>
+                                            <p style="color: #94a3b8; font-size: 0.95rem; margin-top: 5px;">${closest[type].name}</p>
+                                            <div style="font-size: 2rem; font-weight: 800; margin: 10px 0;">${closest[type].dist} <span style="font-size: 1rem; color: #888;">km away</span></div>
+                                        </div>
+                                        <div>
+                                            <button class="btn btn-primary" style="width:100%; margin-bottom:8px;" onclick="setStartAndScroll('${closest[type].name}')">Route from here</button>
+                                            <button class="btn btn-accent" style="width:100%;" onclick="showLiveBoard('${closest[type].name}', '${type}')"><i class="fas fa-satellite-dish"></i> Live Status</button>
+                                        </div>
+                                    </div>`;
+                            }
+                        });
+                        if(userMarker) map.removeLayer(userMarker);
+                        const pulsingIcon = L.divIcon({ className: 'gps-pulse', iconSize: [16, 16] });
+                        userMarker = L.marker([userLat, userLng], {icon: pulsingIcon}).addTo(map).bindPopup("<b>You are here</b>").openPopup(); 
+                        map.flyTo([userLat, userLng], 12);
+                    }
+                } catch (error) { Swal.fire('Error', 'Failed to connect to Python spatial calculator.', 'error'); }
+            }, (error) => { 
+                btn.innerHTML = '<i class="fas fa-crosshairs"></i> Locate Me'; 
+                Swal.fire('Error', 'Ensure location services are enabled in your browser settings.', 'error'); 
+            });
+        } else { Swal.fire('Error', 'Geolocation is not supported by this browser.', 'error'); }
+    }
+
+    function setStartAndScroll(name) {
+        const input = document.getElementById('start'); input.value = name;
+        document.getElementById('planner').scrollIntoView({ behavior: 'smooth' });
+        input.style.borderColor = '#00b894'; setTimeout(() => input.style.borderColor = '#dfe6e9', 1500);
+    }
+
+    async function showLiveBoard(stationName, type) {
+        Swal.fire({ title: 'Connecting to Server...', html: 'Fetching live data from Python backend...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+        try {
+            const response = await fetch('/api/live-status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ station: stationName }) });
+            const data = await response.json();
+            if (data.success) {
+                const t1 = data.t1; const t2 = data.t2; let htmlContent = '';
+                if(type === 'metro') { htmlContent = `<div>Red Line: ${t1} min</div><div>Blue Line: ${t2} min</div>`; }
+                else if(type === 'bus') { htmlContent = `<div>DTC 412: ${t1} min</div><div>DTC 720: ${t2} min</div>`; }
+                else { htmlContent = `<div>EMU Local: Platform 2</div><div>Express: ${t2} min</div>`; }
+                Swal.fire({ title: `Live Board: ${data.station}`, html: htmlContent, confirmButtonColor: '#2d3436' });
+            }
+        } catch (error) { Swal.fire('Error', 'Could not connect to Python backend.', 'error'); }
+    }
+
+    // ==================== INITIALIZATION ====================
+    window.addEventListener('load', () => {
+        animateHeadline();
+        updateAuthUI();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About NaviDelhi | Urban Transit Intelligence</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <style>
+        :root {
+            --primary: #00d4ff;
+            --accent: #ff2e63;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            color: #e0f2fe;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header - identical to main page */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+            z-index: 10000;
+            padding: 1.1rem 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.1rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #ff2e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 2.8rem;
+        }
+
+        .nav-links a {
+            color: #cbd5e1;
+            text-decoration: none;
+            font-weight: 500;
+            position: relative;
+        }
+
+        .nav-links a:hover { color: var(--primary); }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after { width: 100%; }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, #00d4ff, #0099cc);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 212, 255, 0.45);
+        }
+
+        .btn-accent {
+            background: linear-gradient(90deg, #ff2e63, #ff6b8b);
+            color: white;
+        }
+
+        /* About Hero */
+        .about-hero {
+            padding: 160px 6% 80px;
+            text-align: center;
+            background: radial-gradient(circle at 50% 30%, rgba(0, 212, 255, 0.12) 0%, transparent 60%);
+            position: relative;
+        }
+        .about-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.9)),
+                        url('https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=2000') center/cover no-repeat;
+            z-index: -1;
+        }
+        .about-hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, #00d4ff, #ff2e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        .about-hero p {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Content Container */
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 6%;
+            flex: 1;
+        }
+
+        /* Story Card */
+        .story-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 32px;
+            padding: 40px;
+            margin-bottom: 60px;
+            transition: all 0.5s ease;
+        }
+        .story-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 25px 50px rgba(0, 212, 255, 0.2);
+        }
+        .story-card h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .story-card p {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        /* Mission Grid */
+        .mission-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-top: 20px;
+        }
+        .mission-box {
+            flex: 1;
+            min-width: 250px;
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 28px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.4s ease;
+        }
+        .mission-box:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 212, 255, 0.15);
+        }
+        .mission-box i {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+        }
+        .mission-box h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        .mission-box p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        /* Footer - identical to main page */
+        footer {
+            background: #0a0a0a;
+            padding: 90px 6% 50px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: auto;
+        }
+        .footer-content h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .footer-content p {
+            color: #64748b;
+            max-width: 520px;
+            margin: 0 auto 2rem;
+        }
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .social-icons a {
+            color: #64748b;
+            font-size: 1.5rem;
+            transition: 0.3s;
+        }
+        .social-icons a:hover {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+        .copyright {
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        /* SweetAlert2 custom theme (same as main) */
+        .swal2-backdrop {
+            backdrop-filter: blur(12px) !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+        }
+        .swal2-popup {
+            background: rgba(15, 23, 42, 0.98) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(0, 212, 255, 0.5) !important;
+            border-radius: 32px !important;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 212, 255, 0.2) inset !important;
+            color: #e0f2fe !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+        .swal2-title {
+            color: #00d4ff !important;
+            font-family: 'Space Grotesk', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 1.8rem !important;
+        }
+        .swal2-html-container {
+            color: #cbd5e1 !important;
+        }
+        .swal2-input, .swal2-select {
+            background: rgba(255,255,255,0.07) !important;
+            border: 1px solid rgba(0, 212, 255, 0.4) !important;
+            border-radius: 16px !important;
+            color: white !important;
+            padding: 14px 20px !important;
+            font-size: 1rem !important;
+            margin: 12px 0 !important;
+        }
+        .swal2-input:focus {
+            border-color: #00d4ff !important;
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25) !important;
+        }
+        .swal2-confirm, .swal2-deny, .swal2-cancel {
+            border-radius: 60px !important;
+            font-weight: 600 !important;
+            padding: 12px 28px !important;
+            font-size: 1rem !important;
+            transition: all 0.3s ease !important;
+        }
+        .swal2-confirm {
+            background: linear-gradient(90deg, #00d4ff, #0099cc) !important;
+            color: white !important;
+        }
+        .swal2-confirm:hover {
+            transform: translateY(-3px) scale(1.02) !important;
+            box-shadow: 0 10px 25px rgba(0, 212, 255, 0.5) !important;
+        }
+        .swal2-deny {
+            background: linear-gradient(90deg, #ff2e63, #ff6b8b) !important;
+            color: white !important;
+        }
+        .swal2-cancel {
+            background: rgba(255,255,255,0.1) !important;
+            color: #cbd5e1 !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+        }
+        .swal2-close {
+            color: #94a3b8 !important;
+        }
+        .swal2-close:hover {
+            color: #ff2e63 !important;
+        }
+
+        @media (max-width: 768px) {
+            header { padding: 0.8rem 1rem; }
+            .nav-links { gap: 1rem; }
+            .about-hero h1 { font-size: 2.5rem; }
+            .story-card { padding: 25px; }
+            .mission-grid { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo"><i class="fas fa-subway"></i> NaviDelhi</a>
+        <nav class="nav-links">
+            <a href="/">Home</a>
+            <a href="/#planner">Plan Route</a>
+            <a href="/#nearby">Nearby</a>
+            <a href="/about">About Us</a>
+            <a href="/support">Help & Support</a>
+            <a class="btn btn-accent" onclick="buyDailyPass()" style="margin-left: 1rem;">
+                <i class="fas fa-id-card"></i> Pass
+            </a>
+            <span id="auth-section" style="margin-left: 1rem; display: flex; align-items: center; gap: 12px;"></span>
+        </nav>
+    </header>
+
+    <section class="about-hero">
+        <h1>About <span style="color:#ff2e63;">NaviDelhi</span></h1>
+        <p>Building the digital infrastructure for a seamlessly connected National Capital Region.</p>
+    </section>
+
+    <div class="content-container">
+        <div class="story-card">
+            <h2><i class="fas fa-city"></i> Our Story</h2>
+            <p>NaviDelhi was born out of a simple necessity: navigating the vast and complex transit networks of Delhi and the NCR shouldn't require three different apps. With millions of commuters traveling daily across DMRC Metro lines, DTC Buses, and EMU Local Trains, we realized the need for a unified intelligence platform.</p>
+            <p>Our proprietary routing engine calculates the most optimal paths using real-time spatial data, giving you the power to choose whether you want the fastest route, the cheapest fare, or the journey with the fewest transfers.</p>
+        </div>
+
+        <div class="mission-grid">
+            <div class="mission-box">
+                <i class="fas fa-leaf" style="color: #22c55e;"></i>
+                <h3>Sustainability</h3>
+                <p>Encouraging public transit use to drastically reduce the city's carbon footprint and traffic congestion.</p>
+            </div>
+            <div class="mission-box">
+                <i class="fas fa-qrcode" style="color: #f1c40f;"></i>
+                <h3>Unified Access</h3>
+                <p>One digital wallet, one master pass. Say goodbye to standing in lines for physical tokens.</p>
+            </div>
+            <div class="mission-box">
+                <i class="fas fa-bolt" style="color: #ff2e63;"></i>
+                <h3>Real-Time Data</h3>
+                <p>Live station tracking and dynamic rerouting to ensure you are never left waiting at the platform.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <h3>NaviDelhi Transit Technologies</h3>
+            <p>Simplifying urban mobility and connecting the city, one route at a time.</p>
+        </div>
+        <div class="social-icons">
+            <a href="#" title="Twitter"><i class="fab fa-x-twitter"></i></a>
+            <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" title="GitHub"><i class="fab fa-github"></i></a>
+        </div>
+        <div class="copyright">
+            © 2026 NaviDelhi Transit Solutions. All rights reserved.
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <script>
+        // ==================== AUTH & WALLET FUNCTIONS (same as main page) ====================
+        const isLoggedIn = {{ 'true' if current_user else 'false' }};
+
+        function updateAuthUI() {
+            const container = document.getElementById('auth-section');
+            if (isLoggedIn) {
+                container.innerHTML = `
+                    <a onclick="viewWallet()" style="cursor: pointer; color: #00d4ff; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-wallet"></i> Wallet
+                    </a>
+                    <button class="btn btn-primary" onclick="logoutUser(event)">Logout</button>
+                `;
+            } else {
+                container.innerHTML = `<button class="btn btn-primary" onclick="signInPopup(event)">Sign In</button>`;
+            }
+        }
+
+        async function signInPopup(e) {
+            if (e) e.preventDefault(); 
+            const result = await Swal.fire({
+                title: 'Welcome Back',
+                html: `<div style="margin-top:15px;"><input type="email" id="login-email" class="swal2-input" placeholder="Email Address"><input type="password" id="login-password" class="swal2-input" placeholder="Password"></div>`,
+                width: '480px',
+                showDenyButton: true, 
+                confirmButtonText: 'Login', 
+                denyButtonText: 'Register',
+                confirmButtonColor: '#00d4ff',
+                denyButtonColor: '#ff2e63',
+                background: 'transparent',
+                customClass: { popup: 'custom-swal-popup', confirmButton: 'custom-swal-confirm', denyButton: 'custom-swal-deny' },
+                preConfirm: () => {
+                    return { email: document.getElementById('login-email').value, password: document.getElementById('login-password').value };
+                }
+            });
+            if (result.isConfirmed) {
+                const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(result.value) });
+                const data = await res.json();
+                if(data.success) window.location.reload();
+                else Swal.fire('Error', data.message, 'error');
+            } else if (result.isDenied) { showRegisterPopup(); }
+        }
+
+        async function showRegisterPopup() {
+            const { value: form } = await Swal.fire({
+                title: 'Create Account',
+                html: `
+                    <div class="input-group"><input type="text" id="reg-name" class="swal2-input" placeholder="Full Name"><div id="name-error" class="error-msg"></div></div>
+                    <div class="input-group"><input type="email" id="reg-email" class="swal2-input" placeholder="Email Address"><div id="email-error" class="error-msg"></div></div>
+                    <div class="input-group"><input type="password" id="reg-password" class="swal2-input" placeholder="Password"><div id="password-error" class="error-msg"></div><div style="font-size:0.7rem; margin-top:5px;">Password must have: 8+ chars, 1 uppercase, 1 lowercase, 1 number, 1 special character</div></div>
+                    <div class="input-group"><input type="password" id="reg-confirm-password" class="swal2-input" placeholder="Confirm Password"><div id="confirm-error" class="error-msg"></div></div>
+                `,
+                width: '520px',
+                confirmButtonText: 'Sign Up',
+                confirmButtonColor: '#00d4ff',
+                showCancelButton: true,
+                background: 'transparent',
+                customClass: { popup: 'custom-swal-popup', confirmButton: 'custom-swal-confirm', cancelButton: 'custom-swal-cancel' },
+                focusConfirm: false,
+                didOpen: () => {
+                    const nameInput = document.getElementById('reg-name');
+                    const emailInput = document.getElementById('reg-email');
+                    const passwordInput = document.getElementById('reg-password');
+                    const confirmInput = document.getElementById('reg-confirm-password');
+                    const confirmBtn = Swal.getConfirmButton();
+                    confirmBtn.disabled = true;
+
+                    const validateName = () => {
+                        const name = nameInput.value.trim();
+                        const errorDiv = document.getElementById('name-error');
+                        if (!name) { errorDiv.textContent = 'Name is required'; errorDiv.style.color = '#ff8aae'; return false; }
+                        if (name.length < 2) { errorDiv.textContent = 'Name must be at least 2 characters'; errorDiv.style.color = '#ff8aae'; return false; }
+                        if (/[^a-zA-Z\s]/.test(name)) { errorDiv.textContent = 'Name can only contain letters and spaces'; errorDiv.style.color = '#ff8aae'; return false; }
+                        errorDiv.textContent = '✓ Looks good'; errorDiv.style.color = '#2ecc71'; return true;
+                    };
+                    const validateEmail = () => {
+                        const email = emailInput.value.trim();
+                        const errorDiv = document.getElementById('email-error');
+                        if (!email) { errorDiv.textContent = 'Email is required'; errorDiv.style.color = '#ff8aae'; return false; }
+                        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { errorDiv.textContent = 'Invalid email'; errorDiv.style.color = '#ff8aae'; return false; }
+                        errorDiv.textContent = '✓ Valid email'; errorDiv.style.color = '#2ecc71'; return true;
+                    };
+                    const validatePassword = () => {
+                        const pwd = passwordInput.value;
+                        const errorDiv = document.getElementById('password-error');
+                        const strong = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+                        if (!pwd) { errorDiv.textContent = 'Password is required'; errorDiv.style.color = '#ff8aae'; return false; }
+                        if (!strong.test(pwd)) { errorDiv.textContent = 'Password does not meet requirements'; errorDiv.style.color = '#ff8aae'; return false; }
+                        errorDiv.textContent = '✓ Strong password'; errorDiv.style.color = '#2ecc71'; return true;
+                    };
+                    const validateConfirm = () => {
+                        const pwd = passwordInput.value;
+                        const confirm = confirmInput.value;
+                        const errorDiv = document.getElementById('confirm-error');
+                        if (!confirm) { errorDiv.textContent = 'Please confirm your password'; errorDiv.style.color = '#ff8aae'; return false; }
+                        if (pwd !== confirm) { errorDiv.textContent = 'Passwords do not match'; errorDiv.style.color = '#ff8aae'; return false; }
+                        errorDiv.textContent = '✓ Passwords match'; errorDiv.style.color = '#2ecc71'; return true;
+                    };
+                    const checkAll = () => {
+                        confirmBtn.disabled = !(validateName() && validateEmail() && validatePassword() && validateConfirm());
+                    };
+                    nameInput.addEventListener('input', () => { validateName(); checkAll(); });
+                    emailInput.addEventListener('input', () => { validateEmail(); checkAll(); });
+                    passwordInput.addEventListener('input', () => { validatePassword(); validateConfirm(); checkAll(); });
+                    confirmInput.addEventListener('input', () => { validateConfirm(); checkAll(); });
+                    validateName(); validateEmail(); validatePassword(); validateConfirm(); checkAll();
+                },
+                preConfirm: () => {
+                    const name = document.getElementById('reg-name').value.trim();
+                    const email = document.getElementById('reg-email').value.trim();
+                    const pwd = document.getElementById('reg-password').value;
+                    const confirm = document.getElementById('reg-confirm-password').value;
+                    if (!(name.length>=2 && /^[a-zA-Z\s]+$/.test(name)) ||
+                        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
+                        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/.test(pwd) ||
+                        pwd !== confirm) {
+                        Swal.showValidationMessage('Please fix the errors above');
+                        return false;
+                    }
+                    return { name, email, password: pwd };
+                }
+            });
+            if (form) {
+                Swal.fire({ title: 'Creating Account...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                try {
+                    const res = await fetch('/api/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+                    const data = await res.json();
+                    if (data.success) {
+                        Swal.fire('Success', 'Account created successfully!', 'success').then(() => window.location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                } catch (err) {
+                    Swal.fire('Error', 'Server connection failed.', 'error');
+                }
+            }
+        }
+
+        function logoutUser(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Log Out?',
+                text: "Are you sure you want to log out?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ff2e63',
+                cancelButtonColor: '#475569',
+                confirmButtonText: 'Yes, Log Out'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await fetch('/api/logout', { method: 'POST' });
+                    window.location.reload();
+                }
+            });
+        }
+
+        async function buyDailyPass() {
+            if (!isLoggedIn) {
+                Swal.fire({ title: 'Login Required', text: 'Please sign in to purchase a pass.', icon: 'info', confirmButtonColor: '#00d4ff' })
+                .then(() => { signInPopup(); });
+                return;
+            }
+            const result = await Swal.fire({ 
+                title: 'Delhi Master Pass', 
+                html: `<div style="text-align:left; margin-bottom: 15px;"><p style="color:#94a3b8;">Unlimited travel across Metro, DTC Buses, and local EMU Trains.</p></div><select id="pass-type" class="swal2-input" style="width: 100%;"><option value="50">1-Day Explorer Pass (₹50)</option><option value="130">3-Day Tourist Pass (₹130)</option><option value="250">7-Day Commuter Pass (₹250)</option></select>`, 
+                confirmButtonText: 'Generate Pass', confirmButtonColor: '#00d4ff', showCancelButton: true 
+            });
+            if(result.isConfirmed) {
+                const price = document.getElementById('pass-type').value;
+                Swal.fire({title: 'Initiating Secure Payment...', allowOutsideClick: false, didOpen: () => Swal.showLoading()});
+                try {
+                    const orderRes = await fetch('/api/create-order', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ price: price, type: 'pass' }) });
+                    const orderData = await orderRes.json();
+                    if (!orderData.success) { Swal.fire('Error', 'Failed to initialize payment gateway.', 'error'); return; }
+                    Swal.close();
+                    const options = {
+                        "key": "rzp_test_SWz7sxoKSCmm5i",
+                        "amount": orderData.amount,
+                        "currency": "INR",
+                        "name": "NaviDelhi Transit",
+                        "description": `Master Pass (₹${price})`,
+                        "image": "https://cdn-icons-png.flaticon.com/512/3214/3214307.png",
+                        "order_id": orderData.order_id,
+                        "handler": async function (response) {
+                            Swal.fire({ title: 'Processing Pass...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                            const res = await fetch('/api/generate-pass', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({tier: price}) });
+                            const passData = await res.json();
+                            setTimeout(() => {
+                                Swal.fire({ 
+                                    title: 'Active Pass', 
+                                    html: `<div style="background: #1e293b; color: white; padding: 20px; border-radius: 20px; margin-top: 15px;"><div style="text-align:center;"><i class="fas fa-subway" style="font-size:4rem; opacity:0.3;"></i></div><h3 style="margin:0 0 10px 0; color:#00d4ff;">VALID</h3><p style="margin:0;">All-Access Transit Pass</p><p style="margin:5px 0; font-size:0.8rem;">Payment ID: ${response.razorpay_payment_id}</p><div id="pass-qrcode" style="display:flex; justify-content:center; padding:15px; background:white; border-radius:12px;"></div></div>`, 
+                                    confirmButtonText: 'Save to Wallet', confirmButtonColor: '#00d4ff', 
+                                    didOpen: () => { new QRCode(document.getElementById("pass-qrcode"), { text: passData.qr_data, width: 160, height: 160, colorDark : "#1e293b", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); } 
+                                });
+                            }, 1200);
+                        },
+                        "theme": { "color": "#00d4ff" }
+                    };
+                    const rzp1 = new Razorpay(options);
+                    rzp1.on('payment.failed', function (response){ Swal.fire('Payment Failed', response.error.description, 'error'); });
+                    rzp1.open();
+                } catch (error) { Swal.fire('Error', 'Network error. Please try again.', 'error'); }
+            }
+        }
+
+        async function viewWallet() {
+            Swal.fire({ title: 'Loading Wallet...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch('/api/my-wallet');
+                const data = await res.json();
+                if (!data.success) {
+                    Swal.fire('Login Required', 'Please sign in to view your tickets and passes.', 'info');
+                    return;
+                }
+                const now = new Date();
+                const activePasses = [], expiredPasses = [];
+                data.passes.forEach(p => {
+                    const pDate = new Date(p.purchase_date);
+                    let daysValid = p.tier_price == 250 ? 7 : (p.tier_price == 130 ? 3 : 1);
+                    const expDate = new Date(pDate.getTime() + (daysValid * 24 * 60 * 60 * 1000));
+                    if (now < expDate) activePasses.push(p); else expiredPasses.push(p);
+                });
+                const activeTickets = [], expiredTickets = [];
+                data.tickets.forEach(t => {
+                    const pDate = new Date(t.purchase_date);
+                    const expDate = new Date(pDate.getTime() + (2 * 60 * 60 * 1000));
+                    if (now < expDate) activeTickets.push(t); else expiredTickets.push(t);
+                });
+                let html = '<div style="text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px;">';
+                html += '<h3 style="color: #00d4ff; margin-top: 0; margin-bottom: 16px;"><i class="fas fa-id-card"></i> Active Passes</h3>';
+                if (activePasses.length === 0) html += '<p style="color: #94a3b8;">No active passes.</p>';
+                else {
+                    activePasses.forEach(p => {
+                        let dateStr = new Date(p.purchase_date).toLocaleString();
+                        html += `<div class="wallet-pass-card" onclick="showSavedPassQR('${p.id}', '${p.tier_price}', '${dateStr}')" style="background: rgba(15,23,42,0.8); border:1px solid rgba(0,212,255,0.3); border-radius:20px; padding:12px; margin-bottom:12px; cursor:pointer;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <div><strong>Master Pass (₹${p.tier_price})</strong><br><span style="font-size:0.8rem; color:#94a3b8;">Purchased: ${dateStr}</span></div>
+                                        <span style="background:#00d4ff; color:#0a0a0a; border-radius:30px; padding:4px 12px;">ACTIVE</span>
+                                    </div>
+                                  </div>`;
+                    });
+                }
+                html += '<h3 style="color: #00d4ff; margin-top: 30px; margin-bottom: 16px;"><i class="fas fa-ticket-alt"></i> Active Tickets</h3>';
+                if (activeTickets.length === 0) html += '<p style="color: #94a3b8;">No active tickets.</p>';
+                else {
+                    activeTickets.forEach(t => {
+                        let dateStr = new Date(t.purchase_date).toLocaleString();
+                        html += `<div class="wallet-ticket-card" onclick="showSavedTicketQR('${t.id}', '${t.start_station}', '${t.end_station}', '${t.price}')" style="background: rgba(15,23,42,0.8); border:1px solid rgba(0,212,255,0.3); border-radius:20px; padding:12px; margin-bottom:12px; cursor:pointer;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <div><strong>${escapeHtml(t.start_station)} → ${escapeHtml(t.end_station)}</strong><br><span style="color:#ff2e63;">₹${t.price}</span><br><span style="font-size:0.8rem; color:#94a3b8;">${dateStr}</span></div>
+                                        <span style="background:#00d4ff; color:#0a0a0a; border-radius:30px; padding:4px 12px;">ACTIVE</span>
+                                    </div>
+                                  </div>`;
+                    });
+                }
+                if (expiredPasses.length > 0 || expiredTickets.length > 0) {
+                    html += '<h3 style="color: #64748b; margin-top: 30px; margin-bottom: 16px;"><i class="fas fa-history"></i> Past History</h3>';
+                    expiredPasses.forEach(p => {
+                        let dateStr = new Date(p.purchase_date).toLocaleString();
+                        html += `<div style="background: rgba(0,0,0,0.4); border:1px solid #334155; border-radius:20px; padding:12px; margin-bottom:12px; opacity:0.8;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <div><strong>Master Pass (₹${p.tier_price})</strong><br><span style="font-size:0.8rem; color:#64748b;">${dateStr}</span></div>
+                                        <span style="background:#475569; color:#cbd5e1; border-radius:30px; padding:4px 12px;">EXPIRED</span>
+                                    </div>
+                                  </div>`;
+                    });
+                    expiredTickets.forEach(t => {
+                        let dateStr = new Date(t.purchase_date).toLocaleString();
+                        html += `<div style="background: rgba(0,0,0,0.4); border:1px solid #334155; border-radius:20px; padding:12px; margin-bottom:12px; opacity:0.8;">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <div><strong><strike>${escapeHtml(t.start_station)} → ${escapeHtml(t.end_station)}</strike></strong><br><span style="font-size:0.8rem; color:#64748b;">${dateStr}</span></div>
+                                        <span style="background:#475569; color:#cbd5e1; border-radius:30px; padding:4px 12px;">EXPIRED</span>
+                                    </div>
+                                  </div>`;
+                    });
+                }
+                html += '</div>';
+                Swal.fire({
+                    title: 'My Digital Wallet',
+                    html: html,
+                    confirmButtonText: 'Close',
+                    confirmButtonColor: '#00d4ff',
+                    background: 'transparent',
+                    customClass: { popup: 'custom-swal-popup', confirmButton: 'custom-swal-confirm' },
+                    width: '550px'
+                });
+            } catch (error) {
+                Swal.fire('Error', 'Could not load your wallet data.', 'error');
+            }
+        }
+
+        function showSavedPassQR(id, price, dateStr) {
+            const qrText = `MASTER PASS ID: ${id} | TIER: Rs.${price} | PURCHASED: ${dateStr}`;
+            Swal.fire({ 
+                title: 'Active Pass', 
+                html: `<div style="background: #1e293b; color: white; padding: 20px; border-radius: 20px;"><div style="text-align:center;"><i class="fas fa-subway" style="font-size:4rem; opacity:0.3;"></i></div><h3 style="color:#00d4ff;">VALID</h3><p>All-Access Transit Pass</p><p>Pass #${id} • ₹${price}</p><div id="saved-pass-qrcode" style="display:flex; justify-content:center; padding:15px; background:white; border-radius:12px; margin-top:15px;"></div></div>`, 
+                confirmButtonText: '<i class="fas fa-arrow-left"></i> Back to Wallet', 
+                confirmButtonColor: '#00d4ff', 
+                didOpen: () => { 
+                    setTimeout(() => {
+                        const qrContainer = document.getElementById("saved-pass-qrcode");
+                        qrContainer.innerHTML = ""; 
+                        new QRCode(qrContainer, { text: qrText, width: 160, height: 160, colorDark : "#1e293b", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); 
+                    }, 50);
+                } 
+            }).then(() => { viewWallet(); });
+        }
+
+        function showSavedTicketQR(id, start, end, price) {
+            const qrText = `TICKET ID: ${id} | Route: ${start} to ${end} | PAID: Rs.${price}`;
+            Swal.fire({ 
+                title: 'E-Ticket', 
+                html: `<div style="background: #f8fafc; padding: 20px; border-radius: 20px; border: 2px dashed #00d4ff; margin-top: 15px;"><h4 style="color:#00d4ff;">Transit Ticket</h4><h3>${start} → ${end}</h3><p style="font-weight:bold;">Paid: ₹${price}</p><div id="saved-ticket-qrcode" style="display:flex; justify-content:center; padding:10px; background:white; border-radius:12px;"></div></div>`, 
+                confirmButtonText: '<i class="fas fa-arrow-left"></i> Back to Wallet', 
+                confirmButtonColor: '#00d4ff', 
+                didOpen: () => { 
+                    setTimeout(() => {
+                        const qrContainer = document.getElementById("saved-ticket-qrcode");
+                        qrContainer.innerHTML = ""; 
+                        new QRCode(qrContainer, { text: qrText, width: 150, height: 150, colorDark : "#1e293b", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H }); 
+                    }, 50);
+                } 
+            }).then(() => { viewWallet(); });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m]);
+        }
+
+        // Initialize UI
+        updateAuthUI();
+    </script>
+</body>
+</html>
