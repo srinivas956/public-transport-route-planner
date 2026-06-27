@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR)
-app.secret_key = "NAVIDELHI_SUPER_SECRET_KEY"
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'default_dev_key_fallback')
 
 app.config['SESSION_COOKIE_HTTPONLY']=True
 app.config['SESSION_COOKIE_SECURE']=False   
@@ -31,13 +31,13 @@ app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'moksh250225@gmail.com'
-app.config['MAIL_PASSWORD'] = 'ohwr nnqu seqd bfvl'
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = 'moksh250225@gmail.com'
 
 mail = Mail(app)
 
-RAZORPAY_KEY_ID = "rzp_test_SWz7sxoKSCmm5i"
-RAZORPAY_KEY_SECRET = "h64aykpveS1TVkYsBy3702sc"
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET')
 razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 def generate_otp():
